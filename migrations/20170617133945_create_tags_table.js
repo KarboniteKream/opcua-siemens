@@ -8,6 +8,7 @@ exports.up = (knex) => {
 		table.increments("id").unsigned().primary();
 		table.string("name", 63).notNullable();
 		table.string("node_id", 255).notNullable();
+		table.boolean("monitor").notNullable();
 		table.timestamps(false, true);
 	});
 };

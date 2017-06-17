@@ -3,6 +3,8 @@
 const opcua = require("./opcua");
 const Bookshelf = require("./database");
 
+const Tag = require("./models/tag");
+
 async function main() {
 	let url = "opc.tcp://192.168.1.105:4870";
 
@@ -13,14 +15,18 @@ async function main() {
 		let data = await opcua.read(connection, ["ns=4;s=Key", "ns=4;s=Sensor5"]);
 		console.log(data);
 
-		let node = {
-			name: "Key",
-			id: "ns=4;s=Key",
-			class: "Variable",
-		};
-
 		let subscription = opcua.createSubscription(connection);
-		opcua.monitor(subscription, node);
+
+		let monitoredTags = (await Tag.where({
+			monitor: true,
+		}).fetchAll()).toJSON();
+
+		for (let tag of monitoredTags) {
+			opcua.monitor(subscription, {
+				name: tag.name,
+				id: tag.node_id,
+			});
+		}
 
 		setTimeout(() => {
 			Bookshelf.knex.destroy();

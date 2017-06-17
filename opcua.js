@@ -197,6 +197,7 @@ async function monitor(subscription, node) {
 		tag = await Tag.forge({
 			name: node.name,
 			node_id: node.id,
+			monitor: true,
 		}).save();
 	}
 
