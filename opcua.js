@@ -1,7 +1,7 @@
 "use strict";
 
-const opcua = require("node-opcua");
 const moment = require("moment");
+const opcua = require("node-opcua");
 
 const Tag = require("./models/tag");
 const Data = require("./models/data");
@@ -213,6 +213,7 @@ async function monitor(subscription, node) {
 			tag_id: tag.id,
 			value: data.value.value,
 			type: data.value.dataType.key,
+			timestamp: data.sourceTimestamp,
 		}).save();
 	});
 }
