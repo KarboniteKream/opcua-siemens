@@ -1,10 +1,26 @@
 {
   "name": "siemens-opcua",
   "version": "0.0.1",
-  "main": "index.js",
+  "author": "Klemen Košir <klemen.kosir@kream.io>",
+  "description": "An OPC UA monitoring service for Siemens PLCs.",
+  "keywords": [
+    "opc ua",
+    "siemens",
+    "plc"
+  ],
   "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "lint": "git ls-files -co --exclude-standard | grep '\\.js$' | xargs eslint",
+    "migrate": "knex migrate:latest && knex seed:run",
+    "start": "node index.js"
+  },
   "dependencies": {
+    "bookshelf": "^0.10.3",
+    "dotenv": "^4.0.0",
+    "knex": "^0.13.0",
     "moment": "^2.18.1",
+    "mysql": "^2.13.0",
     "node-opcua": "^0.0.64"
   }
 }

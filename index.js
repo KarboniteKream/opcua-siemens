@@ -1,6 +1,7 @@
 "use strict";
 
 const opcua = require("./opcua");
+const Bookshelf = require("./database");
 
 async function main() {
 	let url = "opc.tcp://192.168.1.105:4870";
@@ -22,7 +23,8 @@ async function main() {
 		opcua.monitor(subscription, node);
 
 		setTimeout(() => {
-			opcua.terminateSubscription();
+			Bookshelf.knex.destroy();
+			opcua.terminateSubscription(subscription);
 			opcua.closeConnection(connection);
 		}, 30000);
 	} catch (err) {

@@ -3,6 +3,9 @@
 const opcua = require("node-opcua");
 const moment = require("moment");
 
+const Tag = require("./models/tag");
+const Data = require("./models/data");
+
 function createConnection(url) {
 	return new Promise((resolve, reject) => {
 		const client = new opcua.OPCUAClient();
@@ -185,7 +188,18 @@ function terminateSubscription(subscription) {
 	subscription.terminate();
 }
 
-function monitor(subscription, node) {
+async function monitor(subscription, node) {
+	let tag = await Tag.where({
+		name: node.name,
+	}).fetch();
+
+	if (tag === null) {
+		tag = await Tag.forge({
+			name: node.name,
+			node_id: node.id,
+		}).save();
+	}
+
 	let item = subscription.monitor({
 		nodeId: node.id,
 		attributeId: opcua.AttributeIds.Value,
@@ -194,6 +208,12 @@ function monitor(subscription, node) {
 	item.on("changed", (data) => {
 		let timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
 		console.log(`${timestamp} | [${node.name}] ${data.value.value}`);
+
+		Data.forge({
+			tag_id: tag.id,
+			value: data.value.value,
+			type: data.value.dataType.key,
+		}).save();
 	});
 }
 
