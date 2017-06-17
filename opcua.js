@@ -1,10 +1,12 @@
 "use strict";
 
-const moment = require("moment");
 const opcua = require("node-opcua");
 
 const Tag = require("./models/tag");
 const Data = require("./models/data");
+
+let CONNECTION = null;
+let SUBSCRIPTION = null;
 
 function createConnection(url) {
 	return new Promise((resolve, reject) => {
@@ -22,33 +24,35 @@ function createConnection(url) {
 					return;
 				}
 
-				resolve({
+				CONNECTION = {
 					client,
 					session,
-				});
-			});
-		});
-	});
-}
+				};
 
-function closeConnection(connection) {
-	return new Promise((resolve, reject) => {
-		connection.session.close((err) => {
-			if (err !== null) {
-				reject(err);
-				return;
-			}
-
-			connection.client.disconnect(() => {
 				resolve();
 			});
 		});
 	});
 }
 
-function browse(connection, id = "RootFolder") {
+function closeConnection() {
 	return new Promise((resolve, reject) => {
-		connection.session.browse(id, (err, result) => {
+		CONNECTION.session.close((err) => {
+			if (err !== null) {
+				reject(err);
+				return;
+			}
+
+			CONNECTION.client.disconnect(() => {
+				resolve();
+			});
+		});
+	});
+}
+
+function browse(id = "RootFolder") {
+	return new Promise((resolve, reject) => {
+		CONNECTION.session.browse(id, (err, result) => {
 			if (err !== null) {
 				reject(err);
 				return;
@@ -106,7 +110,7 @@ function browse(connection, id = "RootFolder") {
 	});
 }
 
-function browsePath(connection, path = "RootFolder") {
+function browsePath(path = "RootFolder") {
 	return new Promise(async (resolve, reject) => {
 		let folders = path.replace(/\/+/g, "/").replace(/\/$/, "").split("/");
 
@@ -115,7 +119,7 @@ function browsePath(connection, path = "RootFolder") {
 		}
 
 		try {
-			let nodes = await browse(connection, "RootFolder");
+			let nodes = await browse("RootFolder");
 
 			for (let i = 1; i < folders.length; i++) {
 				let next = null;
@@ -133,7 +137,7 @@ function browsePath(connection, path = "RootFolder") {
 				}
 
 				// eslint-disable-next-line no-await-in-loop
-				nodes = await browse(connection, next.id);
+				nodes = await browse(next.id);
 			}
 
 			return resolve(nodes);
@@ -143,7 +147,7 @@ function browsePath(connection, path = "RootFolder") {
 	});
 }
 
-function read(connection, ids, attribute = opcua.AttributeIds.Value) {
+function read(ids, attribute = opcua.AttributeIds.Value) {
 	return new Promise((resolve, reject) => {
 		if (ids instanceof Array === false) {
 			// eslint-disable-next-line no-param-reassign
@@ -159,7 +163,7 @@ function read(connection, ids, attribute = opcua.AttributeIds.Value) {
 			});
 		}
 
-		connection.session.read(nodes, 0, (err, _, data) => {
+		CONNECTION.session.read(nodes, 0, (err, _, data) => {
 			if (err !== null) {
 				reject(err);
 				return;
@@ -178,17 +182,7 @@ function read(connection, ids, attribute = opcua.AttributeIds.Value) {
 	});
 }
 
-function createSubscription(connection) {
-	return new opcua.ClientSubscription(connection.session, {
-		publishingEnabled: true,
-	});
-}
-
-function terminateSubscription(subscription) {
-	subscription.terminate();
-}
-
-async function monitor(subscription, node) {
+async function monitor(node) {
 	let tag = await Tag.where({
 		name: node.name,
 	}).fetch();
@@ -201,15 +195,18 @@ async function monitor(subscription, node) {
 		}).save();
 	}
 
-	let item = subscription.monitor({
+	if (tag.get("monitor") === false) {
+		await tag.save({
+			monitor: true,
+		});
+	}
+
+	let item = SUBSCRIPTION.monitor({
 		nodeId: node.id,
 		attributeId: opcua.AttributeIds.Value,
 	}, {}, opcua.read_service.TimestampsToReturn.Neither);
 
 	item.on("changed", (data) => {
-		let timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
-		console.log(`${timestamp} | [${node.name}] ${data.value.value}`);
-
 		Data.forge({
 			tag_id: tag.id,
 			value: data.value.value,
@@ -219,12 +216,42 @@ async function monitor(subscription, node) {
 	});
 }
 
+function start(url) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			await createConnection(url);
+
+			SUBSCRIPTION = new opcua.ClientSubscription(CONNECTION.session, {
+				publishingEnabled: true,
+			});
+
+			let monitoredTags = (await Tag.where({
+				monitor: true,
+			}).fetchAll()).toJSON();
+
+			for (let tag of monitoredTags) {
+				monitor({
+					name: tag.name,
+					id: tag.node_id,
+				});
+			}
+
+			return resolve();
+		} catch (err) {
+			return reject(err);
+		}
+	});
+}
+
+function stop() {
+	SUBSCRIPTION.terminate();
+	closeConnection();
+}
+
 module.exports = {
-	createConnection,
-	closeConnection,
+	start,
+	stop,
 	browsePath,
 	read,
-	createSubscription,
-	terminateSubscription,
 	monitor,
 };
