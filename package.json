@@ -2,6 +2,9 @@
   "name": "siemens-opcua",
   "version": "0.0.1",
   "author": "Klemen Košir <klemen.kosir@kream.io>",
+  "contributors": [
+    "Žan Palčič <palcic.zan@gmail.com>"
+  ],
   "description": "An OPC UA monitoring service for Siemens PLCs.",
   "keywords": [
     "opc ua",
