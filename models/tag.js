@@ -8,9 +8,12 @@ module.exports = Bookshelf.model("Tag", {
 	tableName: "tags",
 	hasTimestamps: true,
 
-	parse: (data) => {
-		data.monitor = Boolean(data.monitor);
-		return data;
+	parse: (tag) => {
+		tag.monitor = Boolean(tag.monitor);
+		delete tag.updated_at;
+		delete tag.created_at;
+
+		return tag;
 	},
 
 	data: function() {

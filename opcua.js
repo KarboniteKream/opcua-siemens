@@ -79,7 +79,6 @@ function browse(id = "RootFolder") {
 				let ns = `ns=${reference.browseName.namespaceIndex};`;
 				let identifier = reference.nodeId.value;
 
-				// eslint-disable-next-line default-case
 				switch (reference.nodeId.identifierType.key) {
 					case "NUMERIC":
 						identifier = "i=" + identifier;
@@ -95,6 +94,9 @@ function browse(id = "RootFolder") {
 
 					case "OPAQUE":
 						identifier = "b=" + identifier;
+						break;
+
+					default:
 						break;
 				}
 
