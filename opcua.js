@@ -244,7 +244,6 @@ function start(url) {
 }
 
 function stop() {
-	SUBSCRIPTION.terminate();
 	closeConnection();
 }
 
