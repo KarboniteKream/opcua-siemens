@@ -1,0 +1,2 @@
+export const LOAD_DEVICES = "LOAD_DEVICES";
+export const SET_SELECTED_DEVICE = "SET_SELECTED_DEVICE";

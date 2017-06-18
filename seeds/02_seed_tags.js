@@ -33,6 +33,7 @@ exports.seed = (knex) => {
 	for (let name of names) {
 		tags.push({
 			id: tags.length + 1,
+			device_id: 1,
 			name: name,
 			node_id: `ns=4;s=${name}`,
 			monitor: true,

@@ -3,6 +3,7 @@
 const Bookshelf = require("../database");
 
 require("./data");
+require("./device");
 
 module.exports = Bookshelf.model("Tag", {
 	tableName: "tags",
@@ -14,6 +15,10 @@ module.exports = Bookshelf.model("Tag", {
 		delete tag.created_at;
 
 		return tag;
+	},
+
+	device: function() {
+		return this.belongsTo("Device");
 	},
 
 	data: function() {

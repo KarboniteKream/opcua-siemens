@@ -12,6 +12,7 @@ const Router = require("koa-router");
 const serve = require("koa-static");
 
 const Data = require("./models/data");
+const Device = require("./models/device");
 const Tag = require("./models/tag");
 
 process.on("exit", cleanup);
@@ -66,6 +67,11 @@ router.get("/api/tags/:id/data", async (ctx) => {
 router.get("/api/browse/:path?", async (ctx) => {
 	let nodePath = "/" + (ctx.params.path || "");
 	ctx.body = await opcua.browsePath(nodePath);
+});
+
+router.get("/api/devices", async (ctx) => {
+	let devices = (await Device.fetchAll()).toJSON();
+	ctx.body = devices;
 });
 
 server.use(bodyParser());
