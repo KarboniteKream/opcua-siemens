@@ -23,7 +23,7 @@
   "dependencies": {
     "axios": "^0.16.2",
     "bookshelf": "^0.10.3",
-    "bootstrap-vue": "^0.16.1",
+    "bootstrap-vue": "bootstrap-vue/bootstrap-vue",
     "dotenv": "^4.0.0",
     "font-awesome": "^4.7.0",
     "knex": "^0.13.0",

@@ -68,7 +68,7 @@ router.get("/api/tags/:id/data", async (ctx) => {
 	ctx.body = data.toJSON();
 });
 
-router.get("/api/browse/:path?", async (ctx) => {
+router.get("/api/browse/:path*", async (ctx) => {
 	let nodePath = "/" + (ctx.params.path || "");
 	ctx.body = await opcua.browsePath(nodePath);
 });
