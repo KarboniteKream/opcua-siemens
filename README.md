@@ -17,6 +17,7 @@ yarn run migrate
 
 ### Running
 ```bash
+yarn run build
 yarn start
 ```
 
