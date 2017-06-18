@@ -23,16 +23,17 @@ const getters = {
 };
 
 const actions = {
-	loadDevices(context) {
-		axios.get("/api/devices").then((response) => {
+	async loadDevices(context) {
+		try {
+			let response = await axios.get("/api/devices");
 			context.commit(types.LOAD_DEVICES, response.data);
 
 			if (context.state.selected === null) {
 				context.commit(types.SET_SELECTED_DEVICE, response.data[0].id);
 			}
-		}, (err) => {
+		} catch (err) {
 			console.log(err);
-		});
+		}
 	},
 	setSelectedDevice(context, id) {
 		context.commit(types.SET_SELECTED_DEVICE, id);

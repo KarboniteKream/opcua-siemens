@@ -51,15 +51,10 @@ export default {
 
 <style>
 #app {
-	font-family: 'Avenir', Helvetica, Arial, sans-serif;
+	font-family: "Avenir", Helvetica, Arial, sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	text-align: center;
-	color: #2c3e50;
-}
-
-.bold {
-	font-weight: bold;
+	color: #2C3E50;
 }
 
 nav.navbar {
@@ -67,7 +62,19 @@ nav.navbar {
 	margin-bottom: 30px;
 }
 
+a {
+	color: #42B983;
+}
+
 a:focus {
 	outline: none;
+}
+
+.pointer {
+	cursor: pointer;
+}
+
+.bold {
+	font-weight: bold;
 }
 </style>

@@ -11,6 +11,7 @@ module.exports = Bookshelf.model("Tag", {
 
 	parse: (tag) => {
 		tag.monitor = Boolean(tag.monitor);
+		delete tag.device_id;
 		delete tag.updated_at;
 		delete tag.created_at;
 

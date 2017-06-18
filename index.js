@@ -31,13 +31,17 @@ opcua.start(process.env.OPC_URL);
 const server = new Koa();
 const router = new Router();
 
-router.get("/api/tags", async (ctx) => {
-	let tags = (await Tag.fetchAll()).toJSON();
+router.get("/api/tags/:device_id", async (ctx) => {
+	let tags = (await Tag.where({
+		device_id: ctx.params.device_id,
+	}).fetchAll()).toJSON();
+
 	ctx.body = tags;
 });
 
-router.get("/api/tags/:id", async (ctx) => {
-	let tag = await Tag.forge({
+router.get("/api/tags/:device_id/:id", async (ctx) => {
+	let tag = await Tag.where({
+		device_id: ctx.params.device_id,
 		id: ctx.params.id,
 	}).fetch();
 
@@ -77,6 +81,8 @@ router.get("/api/devices", async (ctx) => {
 server.use(bodyParser());
 server.use(router.routes());
 server.use(router.allowedMethods());
+
+// TODO: Support HTML5 mode.
 server.use(serve(path.join(__dirname, "public")));
 
 server.listen(1107);

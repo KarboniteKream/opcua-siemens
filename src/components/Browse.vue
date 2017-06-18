@@ -1,5 +1,5 @@
 <template>
-<div class="home">
+<div class="browse">
 	<h1>/browse</h1>
 </div>
 </template>
