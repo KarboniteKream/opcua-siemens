@@ -17,6 +17,11 @@ module.exports = Bookshelf.model("Data", {
 				data.value = data.value === "1";
 				break;
 
+			case "Int16":
+			case "Int32":
+				data.value = Number(data.value);
+				break;
+
 			default:
 				break;
 		}
