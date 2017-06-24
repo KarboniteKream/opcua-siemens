@@ -94,7 +94,7 @@ export default {
 
 					case "circle":
 						ctx.beginPath();
-						ctx.arc(position.x, position.y, size.r, 2 * Math.PI, false);
+						ctx.arc(position.x + size.r, position.y + size.r, size.r, 2 * Math.PI, false);
 						ctx.fill();
 						break;
 				}

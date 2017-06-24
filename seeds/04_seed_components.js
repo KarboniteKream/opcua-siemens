@@ -42,8 +42,8 @@ exports.seed = (knex) => {
 		data: JSON.stringify({
 			shape: "circle",
 			position: {
-				x: 150,
-				y: 150,
+				x: 100,
+				y: 100,
 			},
 			size: {
 				r: 50,
