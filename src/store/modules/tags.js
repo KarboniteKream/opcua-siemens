@@ -23,7 +23,7 @@ const actions = {
 
 		try {
 			let deviceID = context.rootState.devices.selected;
-			let response = await axios.get(`/api/tags/${deviceID}`);
+			let response = await axios.get(`/api/devices/${deviceID}/tags`);
 			context.commit(types.LOAD_TAGS, response.data);
 		} catch (err) {
 			console.log(err);

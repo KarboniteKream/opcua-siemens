@@ -32,9 +32,18 @@ opcua.start(process.env.OPC_URL);
 const server = websocket(new Koa());
 const router = new Router();
 
-router.get("/api/tags/:device_id", async (ctx) => {
+router.get("/api/devices", async (ctx) => {
+	let devices = (await Device.fetchAll()).toJSON();
+	ctx.body = devices;
+});
+
+router.get("/api/devices/:id/screens", async (ctx) => {
+	ctx.body = "TODO";
+});
+
+router.get("/api/devices/:id/tags", async (ctx) => {
 	let tags = await Tag.where({
-		device_id: ctx.params.device_id,
+		device_id: ctx.params.id,
 	}).fetchAll();
 
 	let data = tags.toJSON();
@@ -52,10 +61,10 @@ router.get("/api/tags/:device_id", async (ctx) => {
 	ctx.body = data;
 });
 
-router.get("/api/tags/:device_id/:id", async (ctx) => {
+router.get("/api/devices/:id/tags/:tag_id", async (ctx) => {
 	let tag = await Tag.where({
-		device_id: ctx.params.device_id,
-		id: ctx.params.id,
+		id: ctx.params.tag_id,
+		device_id: ctx.params.id,
 	}).fetch();
 
 	if (tag === null) {
@@ -66,9 +75,10 @@ router.get("/api/tags/:device_id/:id", async (ctx) => {
 	ctx.body = tag.toJSON();
 });
 
-router.get("/api/tags/:id/data", async (ctx) => {
+router.get("/api/devices/:id/tags/:tag_id/data", async (ctx) => {
+	// TODO: Only get those that belong to the specified device.
 	let data = await Data.forge({
-		tag_id: ctx.params.id,
+		tag_id: ctx.params.tag_id,
 	}).orderBy("timestamp", "DESC").fetch();
 
 	if (data === null) {
@@ -79,14 +89,10 @@ router.get("/api/tags/:id/data", async (ctx) => {
 	ctx.body = data.toJSON();
 });
 
-router.get("/api/browse/:path*", async (ctx) => {
+router.get("/api/device/:id/browse/:path*", async (ctx) => {
+	// TODO: Browse only the specified device.
 	let nodePath = "/" + (ctx.params.path || "");
 	ctx.body = await opcua.browsePath(nodePath);
-});
-
-router.get("/api/devices", async (ctx) => {
-	let devices = (await Device.fetchAll()).toJSON();
-	ctx.body = devices;
 });
 
 server.use(bodyParser());

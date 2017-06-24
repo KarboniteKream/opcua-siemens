@@ -30,7 +30,7 @@ const actions = {
 
 		try {
 			let deviceID = context.rootState.devices.selected;
-			let response = await axios.get(`/api/browse${path}`);
+			let response = await axios.get(`/api/device/${deviceID}/browse${path}`);
 			context.commit(types.LOAD_NODES, response.data);
 		} catch (err) {
 			console.log(err);
