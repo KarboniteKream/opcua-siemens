@@ -35,11 +35,7 @@ export default {
 				let position = { ...component.position };
 				let size = { ...component.size };
 
-				for (let attribute of component.attributes) {
-					if (typeof attribute.conditions === "undefined") {
-						attribute.conditions = [];
-					}
-
+				for (let attribute of (component.attributes || [])) {
 					if (typeof attribute.operator === "undefined") {
 						attribute.operator = "AND";
 					}
@@ -50,7 +46,7 @@ export default {
 						enabled = true;
 					}
 
-					for (let condition of attribute.conditions) {
+					for (let condition of (attribute.conditions || [])) {
 						let tagValue = this.tags[condition.tag];
 
 						if (attribute.operator === "AND" && tagValue !== condition.value) {
