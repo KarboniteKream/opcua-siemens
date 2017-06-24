@@ -9,68 +9,10 @@ import { mapGetters, mapActions } from "vuex";
 
 export default {
 	name: "screen",
-	data() {
-		return {
-			elements: [{
-				id: 1,
-				name: "TruckSection1",
-				shape: "rectangle",
-				position: {
-					x: 200,
-					y: 200,
-				},
-				size: {
-					w: 100,
-					h: 300,
-				},
-				attributes: [{
-					type: "color",
-					value: "#FF00FF",
-					conditions: [{
-						tag: "Sensor1",
-						value: true,
-					}, {
-						tag: "Sensor2",
-						value: true,
-					}],
-					operator: "OR",
-				}, {
-					type: "color",
-					value: "#FF0000",
-					conditions: [{
-						tag: "Sensor1",
-						value: false,
-					}],
-				}],
-			}, {
-				id: 2,
-				name: "PushSection1",
-				shape: "circle",
-				position: {
-					x: 150,
-					y: 150,
-				},
-				size: {
-					r: 50,
-				},
-				attributes: [{
-					type: "position",
-					value: {
-						x: 250,
-						y: 150,
-					},
-					delta: {
-						tag: "Data_PushSection1State",
-						start: 0,
-						end: 2,
-					},
-				}],
-			}],
-		};
-	},
 	computed: {
 		...mapGetters({
 			tags: "namedTags",
+			components: "components",
 		}),
 	},
 	methods: {
@@ -87,13 +29,13 @@ export default {
 
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-			for (let element of this.elements) {
+			for (let component of this.components) {
 				ctx.fillStyle = "#000000";
 
-				let position = { ...element.position };
-				let size = { ...element.size };
+				let position = { ...component.position };
+				let size = { ...component.size };
 
-				for (let attribute of element.attributes) {
+				for (let attribute of component.attributes) {
 					if (typeof attribute.conditions === "undefined") {
 						attribute.conditions = [];
 					}
@@ -138,14 +80,14 @@ export default {
 							let tagValue = Math.max(attribute.delta.start, Math.min(this.tags[attribute.delta.tag], attribute.delta.end));
 							let delta = (tagValue - attribute.delta.start) / attribute.delta.end;
 
-							position.x += (attribute.value.x - element.position.x) * delta;
-							position.y += (attribute.value.y - element.position.y) * delta;
+							position.x += (attribute.value.x - component.position.x) * delta;
+							position.y += (attribute.value.y - component.position.y) * delta;
 
 							break;
 					}
 				}
 
-				switch (element.shape) {
+				switch (component.shape) {
 					case "rectangle":
 						ctx.fillRect(position.x, position.y, size.w, size.h);
 						break;

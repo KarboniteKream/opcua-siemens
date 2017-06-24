@@ -12,8 +12,10 @@ const Router = require("koa-router");
 const serve = require("koa-static");
 const websocket = require("koa-websocket");
 
+const Component = require("./models/component");
 const Data = require("./models/data");
 const Device = require("./models/device");
+const Screen = require("./models/screen");
 const Tag = require("./models/tag");
 
 process.on("exit", cleanup);
@@ -38,7 +40,11 @@ router.get("/api/devices", async (ctx) => {
 });
 
 router.get("/api/devices/:id/screens", async (ctx) => {
-	ctx.body = "TODO";
+	let screens = (await Screen.fetchAll({
+		withRelated: ["components"],
+	})).toJSON();
+
+	ctx.body = screens;
 });
 
 router.get("/api/devices/:id/tags", async (ctx) => {

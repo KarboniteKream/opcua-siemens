@@ -6,6 +6,7 @@ import createLogger from "vuex/dist/logger";
 import devices from "./modules/devices";
 import tags from "./modules/tags";
 import browse from "./modules/browse";
+import screen from "./modules/screen";
 
 Vue.use(Vuex);
 
@@ -16,6 +17,7 @@ export default new Vuex.Store({
 		devices,
 		tags,
 		browse,
+		screen,
 	},
 	strict: debug,
 	plugins: debug ? [createLogger()] : [],

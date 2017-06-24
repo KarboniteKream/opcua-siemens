@@ -5,3 +5,5 @@ export const LOAD_TAGS = "LOAD_TAGS";
 
 export const LOAD_NODES = "LOAD_NODES";
 export const UPDATE_BREADCRUMB = "UPDATE_BREADCRUMB";
+
+export const LOAD_SCREENS = "LOAD_SCREENS";

@@ -8,11 +8,11 @@ module.exports = Bookshelf.model("Device", {
 	tableName: "devices",
 	hasTimestamps: true,
 
-	parse: (data) => {
-		delete data.updated_at;
-		delete data.created_at;
+	parse: (device) => {
+		delete device.updated_at;
+		delete device.created_at;
 
-		return data;
+		return device;
 	},
 
 	tags: function() {
