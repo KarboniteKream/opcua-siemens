@@ -86,7 +86,33 @@ router.get("/api/devices/:id/tags/:tag_id", async (ctx) => {
 	ctx.body = tag.toJSON();
 });
 
-router.get("/api/devices/:id/tags/:tag_id/data", async (ctx) => {
+router.put("/api/devices/:id/tags/:tag_id", async (ctx) => {
+	let tag = await Tag.where({
+		id: ctx.params.tag_id,
+		device_id: ctx.params.id,
+	}).fetch();
+
+	if (tag === null) {
+		ctx.body = "ERROR";
+		return;
+	}
+
+	if (typeof ctx.request.body.value !== "undefined") {
+		// Send to OPC UA.
+	}
+
+	if (typeof ctx.request.body.monitor !== "undefined") {
+		await tag.save({
+			monitor: ctx.request.body.monitor,
+		});
+
+		// TODO: Send to OPC UA.
+	}
+
+	ctx.status = 204;
+});
+
+router.get("/api/devices/:id/tags/:tag_id/history", async (ctx) => {
 	// TODO: Only get those that belong to the specified device.
 	let data = await Data.forge({
 		tag_id: ctx.params.tag_id,

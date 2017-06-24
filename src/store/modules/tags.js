@@ -44,6 +44,36 @@ const actions = {
 			console.log(err);
 		}
 	},
+	async toggleMonitor(context, item) {
+		context.commit(types.TOGGLE_MONITOR, item.id);
+
+		if (context.rootState.devices.selected === null) {
+			// TODO: Wait for existing action to complete.
+			await context.dispatch("loadDevices");
+		}
+
+		try {
+			let deviceID = context.rootState.devices.selected;
+			await axios.put(`/api/devices/${deviceID}/tags/${item.id}`, { monitor: item.monitor });
+		} catch (err) {
+			console.log(err);
+		}
+	},
+	async writeTag(context, data) {
+		context.commit(types.UPDATE_TAG, data);
+
+		if (context.rootState.devices.selected === null) {
+			// TODO: Wait for existing action to complete.
+			await context.dispatch("loadDevices");
+		}
+
+		try {
+			let deviceID = context.rootState.devices.selected;
+			await axios.put(`/api/devices/${deviceID}/tags/${data.id}`, { value: data.value });
+		} catch (err) {
+			console.log(err);
+		}
+	},
 };
 
 const mutations = {
@@ -52,6 +82,15 @@ const mutations = {
 	},
 	[types.LOAD_TAGS](state, tags) {
 		state.all = tags;
+	},
+	[types.TOGGLE_MONITOR](state, id) {
+		for (let tag of state.all) {
+			if (tag.id !== id) {
+				continue;
+			}
+
+			tag.monitor = !tag.monitor;
+		}
 	},
 	[types.UPDATE_TAG](state, data) {
 		for (let tag of state.all) {
