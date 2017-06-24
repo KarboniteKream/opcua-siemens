@@ -33,6 +33,9 @@ exports.seed = (knex) => {
 					tag: "Sensor1",
 					value: false,
 				}],
+			}, {
+				type: "border",
+				value: "#000000",
 			}],
 		}),
 	}, {

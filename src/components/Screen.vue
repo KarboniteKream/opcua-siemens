@@ -31,9 +31,11 @@ export default {
 
 			for (let component of this.components) {
 				ctx.fillStyle = "#000000";
+				ctx.strokeStyle = "#000000";
 
 				let position = { ...component.position };
 				let size = { ...component.size };
+				let drawBorder = false;
 
 				for (let attribute of (component.attributes || [])) {
 					if (typeof attribute.operator === "undefined") {
@@ -67,6 +69,11 @@ export default {
 							ctx.fillStyle = attribute.value;
 							break;
 
+						case "border":
+							ctx.strokeStyle = attribute.value;
+							drawBorder = true;
+							break;
+
 						case "position":
 							if (typeof attribute.delta === "undefined") {
 								position = attribute.value;
@@ -83,20 +90,18 @@ export default {
 					}
 				}
 
+				ctx.beginPath();
+
 				switch (component.shape) {
 					case "rectangle":
-						ctx.fillRect(position.x, position.y, size.w, size.h);
+						ctx.rect(position.x, position.y, size.w, size.h);
 						break;
 
 					case "circle":
-						ctx.beginPath();
 						ctx.arc(position.x + size.r, position.y + size.r, size.r, 2 * Math.PI, false);
-						ctx.fill();
 						break;
 
 					case "triangle":
-						ctx.beginPath();
-
 						switch (component.direction) {
 							case "up":
 								ctx.moveTo(position.x, position.y + size.h);
@@ -122,9 +127,13 @@ export default {
 								ctx.lineTo(position.x, position.y + size.h);
 								break;
 						}
-
-						ctx.fill();
 						break;
+				}
+
+				ctx.fill();
+
+				if (drawBorder === true) {
+					ctx.stroke();
 				}
 			}
 		},
