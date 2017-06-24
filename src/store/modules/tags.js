@@ -8,6 +8,10 @@ const state = {
 const getters = {
 	// TODO: How can we use this with mapState()?
 	tags: (state) => state.all,
+	namedTags: (state) => state.all.reduce((acc, tag) => {
+		acc[tag.name] = tag.value;
+		return acc;
+	}, {}),
 };
 
 const actions = {

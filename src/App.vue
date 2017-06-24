@@ -10,6 +10,7 @@
 				<b-nav-item to="/devices">Device: {{ selectedDevice.name }}</b-nav-item>
 				<b-nav-item to="/tags">Tags</b-nav-item>
 				<b-nav-item to="/browse">Browse</b-nav-item>
+				<b-nav-item to="/screen">Screen</b-nav-item>
 			</b-nav>
 			<b-nav is-nav-bar class="ml-auto">
 				<b-nav-item-dropdown right>
