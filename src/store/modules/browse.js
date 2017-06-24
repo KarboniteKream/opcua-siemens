@@ -7,8 +7,8 @@ const state = {
 };
 
 const getters = {
-	// TODO: How can we use this with mapState()?
 	path: (state) => state.path.map((text, idx) => ({ text, idx })),
+	// TODO: How can we use this with mapState()?
 	nodes: (state) => state.all,
 };
 

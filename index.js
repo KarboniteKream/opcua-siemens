@@ -10,6 +10,7 @@ const opcua = require("./opcua");
 const path = require("path");
 const Router = require("koa-router");
 const serve = require("koa-static");
+const websocket = require("koa-websocket");
 
 const Data = require("./models/data");
 const Device = require("./models/device");
@@ -28,15 +29,27 @@ function cleanup() {
 
 opcua.start(process.env.OPC_URL);
 
-const server = new Koa();
+const server = websocket(new Koa());
 const router = new Router();
 
 router.get("/api/tags/:device_id", async (ctx) => {
-	let tags = (await Tag.where({
+	let tags = await Tag.where({
 		device_id: ctx.params.device_id,
-	}).fetchAll()).toJSON();
+	}).fetchAll();
 
-	ctx.body = tags;
+	let data = tags.toJSON();
+
+	for (let i = 0; i < data.length; i++) {
+		let value = await tags.models[i].data().orderBy("timestamp", "DESC").fetchOne();
+
+		if (value !== null) {
+			value = value.toJSON().value;
+		}
+
+		data[i].value = value;
+	}
+
+	ctx.body = data;
 });
 
 router.get("/api/tags/:device_id/:id", async (ctx) => {
@@ -52,8 +65,6 @@ router.get("/api/tags/:device_id/:id", async (ctx) => {
 
 	ctx.body = tag.toJSON();
 });
-
-// TODO: read, data, history.
 
 router.get("/api/tags/:id/data", async (ctx) => {
 	let data = await Data.forge({

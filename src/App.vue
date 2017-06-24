@@ -58,7 +58,7 @@ export default {
 }
 
 nav.navbar {
-	border-bottom: 1px solid #CCC;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.125);
 	margin-bottom: 30px;
 }
 

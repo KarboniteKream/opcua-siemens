@@ -1,11 +1,11 @@
 <template>
 <div class="browse">
-	<b-breadcrumb :items="path" @click="changePath($event.idx)" />
+	<b-breadcrumb :items="path" @click="changePath($event.idx)"></b-breadcrumb>
 	<!-- FIXME: Issue with bootstrap v4.0.0-alpha.6 -->
 	<div class="table-responsive">
 		<b-table :items="nodes" :fields="fields" hover striped @row-clicked="openPath($event.name)">
 			<template slot="name" scope="field">
-				<span :class='["icon", getIcon(field.item.class)]' />
+				<span :class='["icon", getIcon(field.item.class)]'></span>
 				<span>{{ field.value }}</span>
 			</template>
 		</b-table>
@@ -64,10 +64,6 @@ export default {
 </script>
 
 <style scoped>
-a {
-	color: #42b983;
-}
-
 .icon {
 	margin-right: 10px;
 }

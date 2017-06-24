@@ -4,10 +4,7 @@
 	<div class="table-responsive">
 		<b-table :items="tags" :fields="fields" hover striped>
 			<template slot="actions" scope="field">
-				<span :class='["pointer", "fa", field.item.monitor ? "fa-eye" : "fa-eye-slash"]' />
-			</template>
-			<template slot="value" scope="field">
-				TODO
+				<span :class='["pointer", "fa", field.item.monitor ? "fa-eye" : "fa-eye-slash"]'></span>
 			</template>
 		</b-table>
 	</div>
