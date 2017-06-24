@@ -97,6 +97,38 @@ export default {
 						ctx.arc(position.x + size.r, position.y + size.r, size.r, 2 * Math.PI, false);
 						ctx.fill();
 						break;
+
+					case "triangle":
+						ctx.beginPath();
+
+						switch (component.direction) {
+							case "up":
+								ctx.moveTo(position.x, position.y + size.h);
+								ctx.lineTo(position.x + (size.w / 2), position.y);
+								ctx.lineTo(position.x + size.w, position.y + size.h);
+								break;
+
+							case "down":
+								ctx.moveTo(position.x, position.y);
+								ctx.lineTo(position.x + size.w, position.y);
+								ctx.lineTo(position.x + (size.w / 2), position.y + size.h);
+								break;
+
+							case "left":
+								ctx.moveTo(position.x, position.y + (size.h / 2));
+								ctx.lineTo(position.x + size.w, position.y);
+								ctx.lineTo(position.x + size.w, position.y + size.h);
+								break;
+
+							case "right":
+								ctx.moveTo(position.x, position.y);
+								ctx.lineTo(position.x + size.w, position.y + (size.h / 2));
+								ctx.lineTo(position.x, position.y + size.h);
+								break;
+						}
+
+						ctx.fill();
+						break;
 				}
 			}
 		},

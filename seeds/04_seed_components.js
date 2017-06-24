@@ -61,5 +61,21 @@ exports.seed = (knex) => {
 				},
 			}],
 		}),
+	}, {
+		id: 3,
+		screen_id: 1,
+		name: "Arrow1",
+		data: JSON.stringify({
+			shape: "triangle",
+			position: {
+				x: 200,
+				y: 100,
+			},
+			size: {
+				w: 100,
+				h: 100,
+			},
+			direction: "right",
+		}),
 	}]);
 };
