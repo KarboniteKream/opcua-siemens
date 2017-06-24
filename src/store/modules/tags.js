@@ -1,7 +1,8 @@
-import * as types from "../mutation-types";
 import axios from "axios";
+import * as types from "../mutation-types";
 
 const state = {
+	socket: null,
 	all: [],
 };
 
@@ -15,7 +16,21 @@ const getters = {
 };
 
 const actions = {
+	initSocket(context) {
+		if (context.state.socket !== null) {
+			return;
+		}
+
+		let socket = new WebSocket("ws://localhost:1107/tags");
+		socket.onmessage = (message) => {
+			context.commit(types.UPDATE_TAG, JSON.parse(message.data));
+		};
+
+		context.commit(types.INIT_SOCKET, socket);
+	},
 	async loadTags(context) {
+		await context.dispatch("initSocket");
+
 		if (context.rootState.devices.selected === null) {
 			// TODO: Wait for existing action to complete.
 			await context.dispatch("loadDevices");
@@ -32,8 +47,20 @@ const actions = {
 };
 
 const mutations = {
+	[types.INIT_SOCKET](state, socket) {
+		state.socket = socket;
+	},
 	[types.LOAD_TAGS](state, tags) {
 		state.all = tags;
+	},
+	[types.UPDATE_TAG](state, data) {
+		for (let tag of state.all) {
+			if (tag.name !== data.name) {
+				continue;
+			}
+
+			tag.value = data.value;
+		}
 	},
 };
 

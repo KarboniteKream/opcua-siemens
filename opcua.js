@@ -8,6 +8,8 @@ const Data = require("./models/data");
 let CONNECTION = null;
 let SUBSCRIPTION = null;
 
+let SOCKETS = [];
+
 function createConnection(url) {
 	return new Promise((resolve, reject) => {
 		const client = new opcua.OPCUAClient();
@@ -215,6 +217,19 @@ async function monitor(node) {
 			type: data.value.dataType.key,
 			timestamp: data.sourceTimestamp,
 		}).save();
+
+		SOCKETS = SOCKETS.filter((socket) => socket.readyState === 1);
+
+		for (let socket of SOCKETS) {
+			if (socket.readyState !== 1) {
+				return;
+			}
+
+			socket.send(JSON.stringify({
+				name: node.name,
+				value: data.value.value,
+			}));
+		}
 	});
 }
 
@@ -249,10 +264,15 @@ function stop() {
 	closeConnection();
 }
 
+function addSocket(socket) {
+	SOCKETS.push(socket);
+}
+
 module.exports = {
 	start,
 	stop,
 	browsePath,
 	read,
 	monitor,
+	addSocket,
 };

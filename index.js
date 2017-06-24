@@ -12,7 +12,6 @@ const Router = require("koa-router");
 const serve = require("koa-static");
 const websocket = require("koa-websocket");
 
-const Component = require("./models/component");
 const Data = require("./models/data");
 const Device = require("./models/device");
 const Screen = require("./models/screen");
@@ -33,6 +32,11 @@ opcua.start(process.env.OPC_URL);
 
 const server = websocket(new Koa());
 const router = new Router();
+const wsRouter = new Router();
+
+wsRouter.get("/tags", (ctx) => {
+	opcua.addSocket(ctx.websocket);
+});
 
 router.get("/api/devices", async (ctx) => {
 	let devices = (await Device.fetchAll()).toJSON();
@@ -55,6 +59,7 @@ router.get("/api/devices/:id/tags", async (ctx) => {
 	let data = tags.toJSON();
 
 	for (let i = 0; i < data.length; i++) {
+		// eslint-disable-next-line no-await-in-loop
 		let value = await tags.models[i].data().orderBy("timestamp", "DESC").fetchOne();
 
 		if (value !== null) {
@@ -102,6 +107,8 @@ router.get("/api/device/:id/browse/:path*", async (ctx) => {
 });
 
 server.use(bodyParser());
+server.ws.use(wsRouter.routes());
+server.ws.use(wsRouter.allowedMethods());
 server.use(router.routes());
 server.use(router.allowedMethods());
 

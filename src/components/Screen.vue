@@ -106,30 +106,11 @@ export default {
 	},
 	async mounted() {
 		await this.loadTags();
+
 		this.reset();
 		this.draw();
 
 		setInterval(this.draw, 100);
-
-		setTimeout(() => {
-			this.tags.Sensor1 = false;
-		}, 2500);
-
-		setTimeout(() => {
-			this.tags.Data_PushSection1State = 1;
-		}, 500);
-
-		setTimeout(() => {
-			this.tags.Data_PushSection1State = 2;
-		}, 1000);
-
-		setTimeout(() => {
-			this.tags.Data_PushSection1State = 1;
-		}, 1500);
-
-		setTimeout(() => {
-			this.tags.Data_PushSection1State = 0;
-		}, 2000);
 	},
 	destroyed() {
 		this.reset();
