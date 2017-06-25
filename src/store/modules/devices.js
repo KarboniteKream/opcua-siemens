@@ -2,13 +2,13 @@ import * as types from "../mutation-types";
 import axios from "axios";
 
 const state = {
-	selected: null,
+	active: null,
 	all: [],
 };
 
 const getters = {
-	selectedDevice: (state) => {
-		let device = state.all.find((device) => device.id === state.selected);
+	activeDevice: (state) => {
+		let device = state.all.find((device) => device.id === state.active);
 
 		if (typeof device === "undefined") {
 			device = {
@@ -28,15 +28,15 @@ const actions = {
 			let response = await axios.get("/api/devices");
 			context.commit(types.LOAD_DEVICES, response.data);
 
-			if (context.state.selected === null) {
-				context.commit(types.SET_SELECTED_DEVICE, response.data[0].id);
+			if (context.state.active === null) {
+				context.commit(types.SET_ACTIVE_DEVICE, response.data[0].id);
 			}
 		} catch (err) {
 			console.log(err);
 		}
 	},
-	setSelectedDevice(context, id) {
-		context.commit(types.SET_SELECTED_DEVICE, id);
+	setActiveDevice(context, id) {
+		context.commit(types.SET_ACTIVE_DEVICE, id);
 	},
 };
 
@@ -44,8 +44,8 @@ const mutations = {
 	[types.LOAD_DEVICES](state, devices) {
 		state.all = devices;
 	},
-	[types.SET_SELECTED_DEVICE](state, id) {
-		state.selected = id;
+	[types.SET_ACTIVE_DEVICE](state, id) {
+		state.active = id;
 	},
 };
 

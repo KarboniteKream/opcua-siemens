@@ -23,13 +23,13 @@ const actions = {
 
 		path = "/" + path.join("/");
 
-		if (context.rootState.devices.selected === null) {
+		if (context.rootState.devices.active === null) {
 			// TODO: Wait for existing action to complete.
 			await context.dispatch("loadDevices");
 		}
 
 		try {
-			let deviceID = context.rootState.devices.selected;
+			let deviceID = context.rootState.devices.active;
 			let response = await axios.get(`/api/device/${deviceID}/browse${path}`);
 			context.commit(types.LOAD_NODES, response.data);
 		} catch (err) {

@@ -17,7 +17,10 @@ exports.seed = (knex) => {
 			},
 			attributes: [{
 				type: "color",
-				value: "#FF00FF",
+				value: {
+					RGB: "#FF00FF",
+				},
+				delta: {},
 				conditions: [{
 					tag: "Sensor1",
 					value: true,
@@ -28,14 +31,23 @@ exports.seed = (knex) => {
 				operator: "OR",
 			}, {
 				type: "color",
-				value: "#FF0000",
+				value: {
+					RGB: "#FF0000",
+				},
+				delta: {},
 				conditions: [{
 					tag: "Sensor1",
 					value: false,
 				}],
+				operator: "AND",
 			}, {
 				type: "border",
-				value: "#000000",
+				value: {
+					RGB: "#000000",
+				},
+				delta: {},
+				conditions: [],
+				operator: "AND",
 			}],
 		}),
 	}, {
@@ -62,6 +74,8 @@ exports.seed = (knex) => {
 					start: 0,
 					end: 2,
 				},
+				conditions: [],
+				operator: "AND",
 			}],
 		}),
 	}, {
@@ -79,6 +93,7 @@ exports.seed = (knex) => {
 				h: 100,
 			},
 			direction: "right",
+			attributes: [],
 		}),
 	}]);
 };

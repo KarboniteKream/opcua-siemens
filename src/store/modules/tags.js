@@ -31,13 +31,13 @@ const actions = {
 	async loadTags(context) {
 		await context.dispatch("initSocket");
 
-		if (context.rootState.devices.selected === null) {
+		if (context.rootState.devices.active === null) {
 			// TODO: Wait for existing action to complete.
 			await context.dispatch("loadDevices");
 		}
 
 		try {
-			let deviceID = context.rootState.devices.selected;
+			let deviceID = context.rootState.devices.active;
 			let response = await axios.get(`/api/devices/${deviceID}/tags`);
 			context.commit(types.LOAD_TAGS, response.data);
 		} catch (err) {
@@ -47,13 +47,13 @@ const actions = {
 	async toggleMonitor(context, item) {
 		context.commit(types.TOGGLE_MONITOR, item.id);
 
-		if (context.rootState.devices.selected === null) {
+		if (context.rootState.devices.active === null) {
 			// TODO: Wait for existing action to complete.
 			await context.dispatch("loadDevices");
 		}
 
 		try {
-			let deviceID = context.rootState.devices.selected;
+			let deviceID = context.rootState.devices.active;
 			await axios.put(`/api/devices/${deviceID}/tags/${item.id}`, { monitor: item.monitor });
 		} catch (err) {
 			console.log(err);
@@ -62,13 +62,13 @@ const actions = {
 	async writeTag(context, data) {
 		context.commit(types.UPDATE_TAG, data);
 
-		if (context.rootState.devices.selected === null) {
+		if (context.rootState.devices.active === null) {
 			// TODO: Wait for existing action to complete.
 			await context.dispatch("loadDevices");
 		}
 
 		try {
-			let deviceID = context.rootState.devices.selected;
+			let deviceID = context.rootState.devices.active;
 			await axios.put(`/api/devices/${deviceID}/tags/${data.id}`, { value: data.value });
 		} catch (err) {
 			console.log(err);

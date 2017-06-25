@@ -7,7 +7,7 @@
 		</b-link>
 		<b-collapse is-nav id="navbar-collapse">
 			<b-nav is-nav-bar>
-				<b-nav-item to="/devices">Device: {{ selectedDevice.name }}</b-nav-item>
+				<b-nav-item to="/devices">Device: {{ activeDevice.name }}</b-nav-item>
 				<b-nav-item to="/tags">Tags</b-nav-item>
 				<b-nav-item to="/browse">Browse</b-nav-item>
 				<b-nav-item to="/screen">Screen</b-nav-item>
@@ -36,7 +36,7 @@ export default {
 	name: "app",
 	computed: {
 		...mapGetters([
-			"selectedDevice",
+			"activeDevice",
 		]),
 	},
 	methods: {
@@ -68,6 +68,10 @@ a {
 }
 
 a:focus {
+	outline: none;
+}
+
+th:focus {
 	outline: none;
 }
 
