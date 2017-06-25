@@ -237,24 +237,28 @@ export default {
 								ctx.moveTo(position.x, position.y + size.h);
 								ctx.lineTo(position.x + (size.w / 2), position.y);
 								ctx.lineTo(position.x + size.w, position.y + size.h);
+								ctx.lineTo(position.x, position.y + size.h);
 								break;
 
 							case "down":
 								ctx.moveTo(position.x, position.y);
 								ctx.lineTo(position.x + size.w, position.y);
 								ctx.lineTo(position.x + (size.w / 2), position.y + size.h);
+								ctx.lineTo(position.x, position.y);
 								break;
 
 							case "left":
 								ctx.moveTo(position.x, position.y + (size.h / 2));
 								ctx.lineTo(position.x + size.w, position.y);
 								ctx.lineTo(position.x + size.w, position.y + size.h);
+								ctx.lineTo(position.x, position.y + (size.h / 2));
 								break;
 
 							case "right":
 								ctx.moveTo(position.x, position.y);
 								ctx.lineTo(position.x + size.w, position.y + (size.h / 2));
 								ctx.lineTo(position.x, position.y + size.h);
+								ctx.lineTo(position.x, position.y);
 								break;
 						}
 						break;

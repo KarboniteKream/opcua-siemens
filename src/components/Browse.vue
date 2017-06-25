@@ -6,7 +6,7 @@
 		<b-table :items="nodes" :fields="fields" hover striped @row-clicked="openPath($event.name)">
 			<template slot="name" scope="field">
 				<span :class='["icon", getIcon(field.item.class)]'></span>
-				<span>{{ field.value }}</span>
+				<span class="pointer">{{ field.value }}</span>
 			</template>
 		</b-table>
 	</div>
