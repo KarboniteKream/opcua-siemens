@@ -66,8 +66,8 @@ exports.seed = (knex) => {
 			attributes: [{
 				type: "position",
 				value: {
-					x: 250,
-					y: 150,
+					x: 200,
+					y: 100,
 				},
 				delta: {
 					tag: "Data_PushSection1State",

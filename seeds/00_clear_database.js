@@ -10,6 +10,7 @@ exports.seed = async (knex, Promise) => {
 		knex("screens").delete(),
 		knex("tags").delete(),
 		knex("devices").delete(),
+		knex("users").delete(),
 	]);
 
 	return Promise.all([
