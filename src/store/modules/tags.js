@@ -1,4 +1,5 @@
 import axios from "axios";
+
 import * as types from "../mutation-types";
 
 const state = {
@@ -85,20 +86,18 @@ const mutations = {
 	},
 	[types.TOGGLE_MONITOR](state, id) {
 		for (let tag of state.all) {
-			if (tag.id !== id) {
-				continue;
+			if (tag.id === id) {
+				tag.monitor = !tag.monitor;
+				break;
 			}
-
-			tag.monitor = !tag.monitor;
 		}
 	},
 	[types.UPDATE_TAG](state, data) {
 		for (let tag of state.all) {
-			if (tag.name !== data.name) {
-				continue;
+			if (tag.name === data.name) {
+				tag.value = data.value;
+				break;
 			}
-
-			tag.value = data.value;
 		}
 	},
 };

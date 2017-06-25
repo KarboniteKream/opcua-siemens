@@ -27,25 +27,25 @@
 					<label>Position</label>
 					<div class="row">
 						<b-input-group left="X" class="col-6">
-							<b-form-input type="text" v-model="activeComponent.position.x"></b-form-input>
+							<b-form-input type="number" v-model="activeComponent.position.x"></b-form-input>
 						</b-input-group>
 						<b-input-group left="Y" class="col-6">
-							<b-form-input type="text" v-model="activeComponent.position.y"></b-form-input>
+							<b-form-input type="number" v-model="activeComponent.position.y"></b-form-input>
 						</b-input-group>
 					</div>
 					<label>Size</label>
 					<div class="row">
 						<template v-if="activeComponent.shape !== 'circle'">
 							<b-input-group left="W" class="col-6">
-								<b-form-input type="text" v-model="activeComponent.size.w"></b-form-input>
+								<b-form-input type="number" v-model="activeComponent.size.w"></b-form-input>
 							</b-input-group>
 							<b-input-group left="H" class="col-6">
-								<b-form-input type="text" v-model="activeComponent.size.h"></b-form-input>
+								<b-form-input type="number" v-model="activeComponent.size.h"></b-form-input>
 							</b-input-group>
 						</template>
 						<template v-if="activeComponent.shape === 'circle'">
 							<b-input-group left="R" class="col-6">
-								<b-form-input type="text" v-model="activeComponent.size.r"></b-form-input>
+								<b-form-input type="number" v-model="activeComponent.size.r"></b-form-input>
 							</b-input-group>
 						</template>
 					</div>
@@ -64,10 +64,10 @@
 						<template v-if="attribute.type === 'position'">
 							<div class="row">
 								<b-input-group left="X" class="col-6">
-									<b-form-input type="text" v-model="attribute.value.x"></b-form-input>
+									<b-form-input type="number" v-model="attribute.value.x"></b-form-input>
 								</b-input-group>
 								<b-input-group left="Y" class="col-6">
-									<b-form-input type="text" v-model="attribute.value.y"></b-form-input>
+									<b-form-input type="number" v-model="attribute.value.y"></b-form-input>
 								</b-input-group>
 							</div>
 						</template>
@@ -78,10 +78,10 @@
 									<b-form-input type="text" v-model="attribute.delta.tag"></b-form-input>
 								</b-input-group>
 								<b-input-group left="Start" class="col-6">
-									<b-form-input type="text" v-model="attribute.delta.start"></b-form-input>
+									<b-form-input type="number" v-model="attribute.delta.start"></b-form-input>
 								</b-input-group>
 								<b-input-group left="End" class="col-6">
-									<b-form-input type="text" v-model="attribute.delta.end"></b-form-input>
+									<b-form-input type="number" v-model="attribute.delta.end"></b-form-input>
 								</b-input-group>
 							</div>
 						</template>
@@ -102,7 +102,7 @@
 					<span class="pointer add-new" @click="newAttribute">+ New attribute</span>
 				</div>
 			</div>
-			<b-button variant="primary" class="pointer" @click="saveComponent">Save</b-button>
+			<b-button variant="primary" class="pointer" @click="saveComponent(activeComponent)">Save</b-button>
 		</div>
 	</div>
 </div>
@@ -284,19 +284,16 @@ export default {
 				value: "",
 			});
 		},
-		saveComponent() {
-			// TODO: Handle booleans.
-			console.log("TODO");
-		},
-		...mapActions({
-			loadScreens: "loadScreens",
-			setActive: "setActiveComponent",
-			deleteComponent: "deleteComponent",
-		}),
 		setActiveComponent(id) {
 			this.setActive(id);
 			this.activeComponent = JSON.parse(JSON.stringify(this.active));
 		},
+		...mapActions({
+			loadScreens: "loadScreens",
+			setActive: "setActiveComponent",
+			saveComponent: "saveComponent",
+			deleteComponent: "deleteComponent",
+		}),
 	},
 	async mounted() {
 		await this.loadScreens();
