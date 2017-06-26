@@ -90,17 +90,34 @@ const actions = {
 			await context.dispatch("loadDevices");
 		}
 
-		context.commit(types.SAVE_COMPONENT, component);
-
 		try {
 			let deviceID = context.rootState.devices.active;
-			await axios.put(`/api/devices/${deviceID}/screens/${state.all[0].id}/components/${component.id}`, component);
+
+			if (component.id === null) {
+				let response = await axios.post(`/api/devices/${deviceID}/screens/${state.all[0].id}/components`, component);
+				component.id = response.data;
+			} else {
+				await axios.put(`/api/devices/${deviceID}/screens/${state.all[0].id}/components/${component.id}`, component);
+			}
+
+			context.commit(types.SAVE_COMPONENT, component);
 		} catch (err) {
 			console.log(err);
 		}
 	},
-	deleteComponent(context, id) {
-		context.commit(types.DELETE_COMPONENT, id);
+	async deleteComponent(context, id) {
+		if (context.rootState.devices.active === null) {
+			// TODO: Wait for existing action to complete.
+			await context.dispatch("loadDevices");
+		}
+
+		try {
+			let deviceID = context.rootState.devices.active;
+			await axios.delete(`/api/devices/${deviceID}/screens/${state.all[0].id}/components/${id}`);
+			context.commit(types.DELETE_COMPONENT, id);
+		} catch (err) {
+			console.log(err);
+		}
 	},
 };
 
@@ -123,12 +140,22 @@ const mutations = {
 
 			if (component.id === data.id) {
 				Vue.set(components, i, data);
+				return;
+			}
+		}
+
+		components.push(data);
+		state.active = data.id;
+	},
+	[types.DELETE_COMPONENT](state, id) {
+		let components = state.all[0].components;
+
+		for (let i = 0; i < components.length; i++) {
+			if (components[i].id === id) {
+				components.splice(i, 1);
 				break;
 			}
 		}
-	},
-	[types.DELETE_COMPONENT](state, id) {
-		console.log("TODO", id);
 	},
 };
 

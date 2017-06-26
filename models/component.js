@@ -9,9 +9,11 @@ module.exports = Bookshelf.model("Component", {
 	hasTimestamps: true,
 
 	parse: (component) => {
-		Object.assign(component, JSON.parse(component.data));
-		delete component.data;
+		if (typeof component.data !== "undefined") {
+			Object.assign(component, JSON.parse(component.data));
+		}
 
+		delete component.data;
 		delete component.updated_at;
 		delete component.created_at;
 

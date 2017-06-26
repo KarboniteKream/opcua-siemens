@@ -53,6 +53,24 @@ router.get("/api/devices/:id/screens", async (ctx) => {
 	ctx.body = screens;
 });
 
+router.post("/api/devices/:id/screens/:screen_id/components", async (ctx) => {
+	let component = {
+		name: ctx.request.body.name,
+		screen_id: ctx.request.body.screen_id,
+	};
+
+	delete ctx.request.body.id;
+	delete ctx.request.body.screen_id;
+	delete ctx.request.body.name;
+
+	component.data = JSON.stringify(ctx.request.body);
+
+	let model = await Component.forge(component).save();
+
+	ctx.status = 201;
+	ctx.body = model.id;
+});
+
 router.put("/api/devices/:id/screens/:screen_id/components/:component_id", async (ctx) => {
 	let model = await Component.where({
 		id: ctx.params.component_id,
@@ -77,6 +95,14 @@ router.put("/api/devices/:id/screens/:screen_id/components/:component_id", async
 	model.save(component, {
 		patch: true,
 	});
+
+	ctx.status = 204;
+});
+
+router.delete("/api/devices/:id/screens/:screen_id/components/:component_id", async (ctx) => {
+	await Component.forge({
+		id: ctx.params.component_id,
+	}).destroy();
 
 	ctx.status = 204;
 });

@@ -147,6 +147,7 @@ export default {
 			tags: "namedTags",
 			components: "components",
 			active: "activeComponent",
+			screens: "screens",
 		}),
 	},
 	methods: {
@@ -276,7 +277,23 @@ export default {
 			}
 		},
 		newComponent() {
-			console.log("TODO");
+			this.activeComponent = {
+				id: null,
+				screen_id: this.screens[0].id,
+				name: "",
+				shape: "rectangle",
+				position: {
+					x: null,
+					y: null,
+				},
+				size: {
+					w: null,
+					h: null,
+					r: null,
+				},
+				direction: null,
+				attributes: [],
+			};
 		},
 		newAttribute() {
 			this.activeComponent.attributes.push({
@@ -389,5 +406,9 @@ span.pointer:hover {
 
 .operator {
 	margin-bottom: 10px;
+}
+
+label {
+	display: block;
 }
 </style>
