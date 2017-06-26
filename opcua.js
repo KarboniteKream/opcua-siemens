@@ -7,6 +7,7 @@ const Data = require("./models/data");
 
 let CONNECTION = null;
 let SUBSCRIPTION = null;
+let MONITORED_ITEMS = [];
 
 let SOCKETS = [];
 
@@ -186,6 +187,39 @@ function read(ids, attribute = opcua.AttributeIds.Value) {
 	});
 }
 
+function write(ids, values, attribute = opcua.AttributeIds.Value) {
+	return new Promise((resolve, reject) => {
+		if (ids instanceof Array === false) {
+			// eslint-disable-next-line no-param-reassign
+			ids = [ids];
+		}
+
+		if (values instanceof Array === false) {
+			// eslint-disable-next-line no-param-reassign
+			values = [values];
+		}
+
+		let nodes = [];
+
+		for (let i = 0; i < ids.length; i++) {
+			nodes.push({
+				nodeId: ids[i],
+				attributeId: attribute,
+				value: values[i],
+			});
+		}
+
+		CONNECTION.session.write(nodes, (err) => {
+			if (err !== null) {
+				reject(err);
+				return;
+			}
+
+			resolve();
+		});
+	});
+}
+
 async function monitor(node) {
 	let tag = await Tag.where({
 		name: node.name,
@@ -211,6 +245,10 @@ async function monitor(node) {
 	}, {}, opcua.read_service.TimestampsToReturn.Neither);
 
 	item.on("changed", (data) => {
+		if (data.statusCode.name === "BadNodeIdUnknown") {
+			return;
+		}
+
 		Data.forge({
 			tag_id: tag.id,
 			value: data.value.value,
@@ -222,7 +260,7 @@ async function monitor(node) {
 
 		for (let socket of SOCKETS) {
 			if (socket.readyState !== 1) {
-				return;
+				continue;
 			}
 
 			socket.send(JSON.stringify({
@@ -230,6 +268,17 @@ async function monitor(node) {
 				value: data.value.value,
 			}));
 		}
+	});
+
+	MONITORED_ITEMS.push(item);
+}
+
+function terminate(node) {
+	return new Promise((resolve, reject) => {
+		console.log(node);
+		console.log(MONITORED_ITEMS[0]);
+		// MONITORED_ITEMS[0].terminate(() => {});
+		resolve();
 	});
 }
 
@@ -273,6 +322,8 @@ module.exports = {
 	stop,
 	browsePath,
 	read,
+	write,
 	monitor,
+	terminate,
 	addSocket,
 };

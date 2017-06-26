@@ -9,9 +9,11 @@ const Koa = require("koa");
 const opcua = require("./opcua");
 const path = require("path");
 const Router = require("koa-router");
+const send = require("koa-send");
 const serve = require("koa-static");
 const websocket = require("koa-websocket");
 
+const Component = require("./models/component");
 const Data = require("./models/data");
 const Device = require("./models/device");
 const Screen = require("./models/screen");
@@ -31,8 +33,8 @@ function cleanup() {
 opcua.start(process.env.OPC_URL);
 
 const server = websocket(new Koa());
-const router = new Router();
 const wsRouter = new Router();
+const router = new Router();
 
 wsRouter.get("/tags", (ctx) => {
 	opcua.addSocket(ctx.websocket);
@@ -49,6 +51,34 @@ router.get("/api/devices/:id/screens", async (ctx) => {
 	})).toJSON();
 
 	ctx.body = screens;
+});
+
+router.put("/api/devices/:id/screens/:screen_id/components/:component_id", async (ctx) => {
+	let model = await Component.where({
+		id: ctx.params.component_id,
+	}).fetch();
+
+	if (model === null) {
+		ctx.status = 500;
+		ctx.body = "ERROR";
+		return;
+	}
+
+	let component = {
+		name: ctx.request.body.name,
+	};
+
+	delete ctx.request.body.id;
+	delete ctx.request.body.screen_id;
+	delete ctx.request.body.name;
+
+	component.data = JSON.stringify(ctx.request.body);
+
+	model.save(component, {
+		patch: true,
+	});
+
+	ctx.status = 204;
 });
 
 router.get("/api/devices/:id/tags", async (ctx) => {
@@ -79,6 +109,7 @@ router.get("/api/devices/:id/tags/:tag_id", async (ctx) => {
 	}).fetch();
 
 	if (tag === null) {
+		ctx.status = 500;
 		ctx.body = "ERROR";
 		return;
 	}
@@ -93,12 +124,14 @@ router.put("/api/devices/:id/tags/:tag_id", async (ctx) => {
 	}).fetch();
 
 	if (tag === null) {
+		ctx.status = 500;
 		ctx.body = "ERROR";
 		return;
 	}
 
 	if (typeof ctx.request.body.value !== "undefined") {
-		// Send to OPC UA.
+		// TODO: Does this trigger the subscription?
+		await opcua.write(tag.get("node_id"), ctx.request.body.value);
 	}
 
 	if (typeof ctx.request.body.monitor !== "undefined") {
@@ -106,7 +139,11 @@ router.put("/api/devices/:id/tags/:tag_id", async (ctx) => {
 			monitor: ctx.request.body.monitor,
 		});
 
-		// TODO: Send to OPC UA.
+		if (ctx.request.body.monitor === true) {
+			await opcua.monitor(ctx.request.body);
+		} else {
+			await opcua.terminate(ctx.request.body);
+		}
 	}
 
 	ctx.status = 204;
@@ -119,6 +156,7 @@ router.get("/api/devices/:id/tags/:tag_id/history", async (ctx) => {
 	}).orderBy("timestamp", "DESC").fetch();
 
 	if (data === null) {
+		ctx.status = 500;
 		ctx.body = "ERROR";
 		return;
 	}
@@ -132,13 +170,15 @@ router.get("/api/device/:id/browse/:path*", async (ctx) => {
 	ctx.body = await opcua.browsePath(nodePath);
 });
 
+router.get("/*", async (ctx) => {
+	await send(ctx, "public/index.html");
+});
+
+server.use(serve(path.join(__dirname, "public")));
 server.use(bodyParser());
 server.ws.use(wsRouter.routes());
 server.ws.use(wsRouter.allowedMethods());
 server.use(router.routes());
 server.use(router.allowedMethods());
-
-// TODO: Support HTML5 mode.
-server.use(serve(path.join(__dirname, "public")));
 
 server.listen(1107);

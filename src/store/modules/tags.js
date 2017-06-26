@@ -55,7 +55,11 @@ const actions = {
 
 		try {
 			let deviceID = context.rootState.devices.active;
-			await axios.put(`/api/devices/${deviceID}/tags/${item.id}`, { monitor: item.monitor });
+			await axios.put(`/api/devices/${deviceID}/tags/${item.id}`, {
+				id: item.id,
+				name: item.name,
+				monitor: item.monitor,
+			});
 		} catch (err) {
 			console.log(err);
 		}

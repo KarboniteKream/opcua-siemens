@@ -54,7 +54,7 @@ const actions = {
 	setActiveComponent(context, id) {
 		context.commit(types.SET_ACTIVE_COMPONENT, id);
 	},
-	saveComponent(context, component) {
+	async saveComponent(context, component) {
 		component = JSON.parse(JSON.stringify(component));
 
 		for (let key of ["position", "size"]) {
@@ -73,15 +73,31 @@ const actions = {
 			}
 
 			for (let condition of attribute.conditions) {
-				if ([true, false, "true", "false"].indexOf(condition.value) !== -1) {
-					condition.value = Boolean(condition.value);
+				if ([true, false].indexOf(condition.value) !== -1) {
+					continue;
+				}
+
+				if (condition.value === "true" || condition.value === "false") {
+					condition.value = condition.value === "true";
 				} else if (isNaN(Number(condition.value)) == false) {
 					condition.value = Number(condition.value);
 				}
 			}
 		}
 
+		if (context.rootState.devices.active === null) {
+			// TODO: Wait for existing action to complete.
+			await context.dispatch("loadDevices");
+		}
+
 		context.commit(types.SAVE_COMPONENT, component);
+
+		try {
+			let deviceID = context.rootState.devices.active;
+			await axios.put(`/api/devices/${deviceID}/screens/${state.all[0].id}/components/${component.id}`, component);
+		} catch (err) {
+			console.log(err);
+		}
 	},
 	deleteComponent(context, id) {
 		context.commit(types.DELETE_COMPONENT, id);
