@@ -6,7 +6,7 @@
 			<h3>Components</h3>
 			<ul v-if="activeComponent !== null">
 				<li v-for="component in components" :key="component.id" :class="['pointer', component.id === activeComponent.id ? 'bold' : '']">
-					<span @click="setActiveComponent(component.id)">{{ component.name }}</span> <span class="fa fa-trash pull-right" @click="deleteComponent(id)"></span>
+					<span @click="setActiveComponent(component.id)">{{ component.name }}</span> <span class="fa fa-trash pull-right" @click="deleteComponent(component.id)"></span>
 				</li>
 				<hr></hr>
 				<span class="pointer" @click="newComponent">+ New component</span>
@@ -52,7 +52,7 @@
 				</div>
 				<div class="col-sm-6">
 					<h3>Attributes</h3>
-					<div v-for="(attribute, idx) in activeComponent.attributes" :key="idx">
+					<div v-for="(attribute, aidx) in activeComponent.attributes" :key="aidx">
 						<label>Type</label>
 						<b-form-select v-model="attribute.type" :options="attributes"></b-form-select>
 						<label>Value</label>
@@ -86,17 +86,21 @@
 							</div>
 						</template>
 						<label>Conditions</label>
-						<div class="condition row" v-for="(condition, idx) in attribute.conditions" :key="idx">
+						<div class="condition row" v-for="(condition, cidx) in attribute.conditions" :key="cidx">
 							<b-input-group left="Tag" class="col-12">
 								<b-form-input type="text" v-model="condition.tag"></b-form-input>
 							</b-input-group>
-							<b-input-group left="Value" class="value col-12">
+							<b-input-group left="Value" class="col-12">
 								<b-form-input type="text" v-model="condition.value"></b-form-input>
 							</b-input-group>
+							<div class="remove col-12">
+								<span class="block pointer" @click="deleteCondition(aidx, cidx)">&times; Remove condition</span>
+							</div>
 						</div>
-						<span class="block pointer" @click="newCondition(idx)">+ New condition</span>
+						<span class="block pointer" @click="newCondition(aidx)">+ New condition</span>
 						<label>Operator</label>
-						<b-form-select v-model="attribute.operator" :options="operators"></b-form-select>
+						<b-form-select class="operator" v-model="attribute.operator" :options="operators"></b-form-select>
+						<span class="block pointer" @click="deleteAttribute(aidx)">&times; Remove attribute</span>
 						<hr></hr>
 					</div>
 					<span class="pointer add-new" @click="newAttribute">+ New attribute</span>
@@ -292,6 +296,12 @@ export default {
 			this.setActive(id);
 			this.activeComponent = JSON.parse(JSON.stringify(this.active));
 		},
+		deleteAttribute(idx) {
+			this.activeComponent.attributes.splice(idx, 1);
+		},
+		deleteCondition(attributeIdx, conditionIdx) {
+			this.activeComponent.attributes[attributeIdx].conditions.splice(conditionIdx, 1);
+		},
 		...mapActions({
 			loadScreens: "loadScreens",
 			setActive: "setActiveComponent",
@@ -365,7 +375,7 @@ button:focus {
 	margin-bottom: 10px;
 }
 
-.condition .value {
+.condition .remove {
 	margin-bottom: 25px;
 }
 
@@ -375,5 +385,9 @@ span.pointer:hover {
 
 .block {
 	display: block;
+}
+
+.operator {
+	margin-bottom: 10px;
 }
 </style>
