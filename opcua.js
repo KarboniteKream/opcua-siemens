@@ -240,7 +240,7 @@ async function monitor(node) {
 	}
 
 	let item = SUBSCRIPTION.monitor({
-		nodeId: node.id,
+		nodeId: tag.get("node_id"),
 		attributeId: opcua.AttributeIds.Value,
 	}, {}, opcua.read_service.TimestampsToReturn.Neither);
 
@@ -274,12 +274,15 @@ async function monitor(node) {
 }
 
 function terminate(node) {
-	return new Promise((resolve, reject) => {
-		console.log(node);
-		console.log(MONITORED_ITEMS[0]);
-		// MONITORED_ITEMS[0].terminate(() => {});
-		resolve();
-	});
+	for (let i = 0; i < MONITORED_ITEMS.length; i++) {
+		if (MONITORED_ITEMS[i].itemToMonitor.nodeId.value === node.name) {
+			MONITORED_ITEMS[i].terminate(() => {
+				MONITORED_ITEMS.splice(i, 1);
+			});
+
+			break;
+		}
+	}
 }
 
 function start(url) {

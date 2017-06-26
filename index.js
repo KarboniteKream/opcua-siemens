@@ -142,7 +142,7 @@ router.put("/api/devices/:id/tags/:tag_id", async (ctx) => {
 		if (ctx.request.body.monitor === true) {
 			await opcua.monitor(ctx.request.body);
 		} else {
-			await opcua.terminate(ctx.request.body);
+			opcua.terminate(ctx.request.body);
 		}
 	}
 
