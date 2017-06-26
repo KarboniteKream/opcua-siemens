@@ -90,6 +90,9 @@
 							<b-input-group left="Tag" class="col-12">
 								<b-form-input type="text" v-model="condition.tag"></b-form-input>
 							</b-input-group>
+							<div class="col-12">
+								<b-form-select class="comparator" v-model="condition.comparator" :options="comparators"></b-form-select>
+							</div>
 							<b-input-group left="Value" class="col-12">
 								<b-form-input type="text" v-model="condition.value"></b-form-input>
 							</b-input-group>
@@ -139,6 +142,14 @@ export default {
 				"AND",
 				"OR",
 			],
+			comparators: [
+				"===",
+				"!==",
+				">",
+				"<",
+				">=",
+				"<=",
+			],
 			activeComponent: null,
 		};
 	},
@@ -184,12 +195,14 @@ export default {
 					}
 
 					for (let condition of (attribute.conditions || [])) {
-						let tagValue = this.tags[condition.tag];
+						let left = this.tags[condition.tag];
+						let op = condition.comparator;
+						let right = condition.value;
 
-						if (attribute.operator === "AND" && tagValue !== condition.value) {
+						if (attribute.operator === "AND" && this.evaluate(left, op, right) === false) {
 							enabled = false;
 							break;
-						} else if (attribute.operator === "OR" && tagValue === condition.value) {
+						} else if (attribute.operator === "OR" && this.evaluate(left, op, right) === true) {
 							enabled = true;
 							break;
 						}
@@ -276,6 +289,16 @@ export default {
 				}
 			}
 		},
+		evaluate(left, op, right) {
+			switch (op) {
+				case "===": return left === right;
+				case "!==": return left !== right;
+				case "<":   return left < right;
+				case ">":   return left > right;
+				case "<=":  return left <= right;
+				case ">=":  return left >= right;
+			}
+		},
 		newComponent() {
 			this.activeComponent = {
 				id: null,
@@ -306,6 +329,7 @@ export default {
 		newCondition(attributeIdx) {
 			this.activeComponent.attributes[attributeIdx].conditions.push({
 				tag: "",
+				comparator: "===",
 				value: "",
 			});
 		},
@@ -406,6 +430,10 @@ span.pointer:hover {
 
 .operator {
 	margin-bottom: 10px;
+}
+
+.comparator {
+	width: 100%;
 }
 
 label {

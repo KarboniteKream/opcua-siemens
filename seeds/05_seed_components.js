@@ -23,9 +23,11 @@ exports.seed = (knex) => {
 				delta: {},
 				conditions: [{
 					tag: "Sensor1",
+					comparator: "===",
 					value: true,
 				}, {
 					tag: "Sensor2",
+					comparator: "===",
 					value: true,
 				}],
 				operator: "OR",
@@ -37,6 +39,7 @@ exports.seed = (knex) => {
 				delta: {},
 				conditions: [{
 					tag: "Sensor1",
+					comparator: "===",
 					value: false,
 				}],
 				operator: "AND",
