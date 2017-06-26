@@ -129,6 +129,8 @@ const mutations = {
 						type: null,
 						value: data.value,
 					});
+
+					state.history = state.history.slice(0, 10);
 				}
 
 				break;
