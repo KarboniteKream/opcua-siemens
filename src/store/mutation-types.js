@@ -5,6 +5,8 @@ export const INIT_SOCKET = "INIT_SOCKET";
 export const LOAD_TAGS = "LOAD_TAGS";
 export const TOGGLE_MONITOR = "TOGGLE_MONITOR";
 export const UPDATE_TAG = "UPDATE_TAG";
+export const LOAD_TAG_HISTORY = "LOAD_TAG_HISTORY";
+export const SELECT_TAG = "SELECT_TAG";
 
 export const LOAD_NODES = "LOAD_NODES";
 export const UPDATE_BREADCRUMB = "UPDATE_BREADCRUMB";

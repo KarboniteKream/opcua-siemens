@@ -151,15 +151,11 @@ router.put("/api/devices/:id/tags/:tag_id", async (ctx) => {
 
 router.get("/api/devices/:id/tags/:tag_id/history", async (ctx) => {
 	// TODO: Only get those that belong to the specified device.
-	let data = await Data.forge({
+	let data = await Data.where({
 		tag_id: ctx.params.tag_id,
-	}).orderBy("timestamp", "DESC").fetch();
-
-	if (data === null) {
-		ctx.status = 500;
-		ctx.body = "ERROR";
-		return;
-	}
+	}).query((qb) => {
+		qb.limit(10);
+	}).orderBy("timestamp", "DESC").fetchAll();
 
 	ctx.body = data.toJSON();
 });

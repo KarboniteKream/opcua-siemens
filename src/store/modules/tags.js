@@ -5,6 +5,8 @@ import * as types from "../mutation-types";
 const state = {
 	socket: null,
 	all: [],
+	active: null,
+	history: [],
 };
 
 const getters = {
@@ -14,6 +16,7 @@ const getters = {
 		acc[tag.name] = tag.value;
 		return acc;
 	}, {}),
+	history: (history) => state.history,
 };
 
 const actions = {
@@ -79,6 +82,23 @@ const actions = {
 			console.log(err);
 		}
 	},
+	async loadTagHistory(context, id) {
+		if (context.rootState.devices.active === null) {
+			// TODO: Wait for existing action to complete.
+			await context.dispatch("loadDevices");
+		}
+
+		try {
+			let deviceID = context.rootState.devices.active;
+			let response = await axios.get(`/api/devices/${deviceID}/tags/${id}/history`);
+			context.commit(types.LOAD_TAG_HISTORY, response.data);
+		} catch (err) {
+			console.log(err);
+		}
+	},
+	selectTag(context, id) {
+		context.commit(types.SELECT_TAG, id);
+	},
 };
 
 const mutations = {
@@ -100,9 +120,26 @@ const mutations = {
 		for (let tag of state.all) {
 			if (tag.name === data.name) {
 				tag.value = data.value;
+
+				if (tag.id === state.active) {
+					state.history.unshift({
+						id: null,
+						tag_id: data.id,
+						timestamp: new Date(),
+						type: null,
+						value: data.value,
+					});
+				}
+
 				break;
 			}
 		}
+	},
+	[types.LOAD_TAG_HISTORY](state, data) {
+		state.history = data;
+	},
+	[types.SELECT_TAG](state, id) {
+		state.active = id;
 	},
 };
 
