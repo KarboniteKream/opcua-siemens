@@ -20,12 +20,19 @@ const getters = {
 };
 
 const actions = {
-	initSocket(context) {
+	async initSocket(context) {
 		if (context.state.socket !== null) {
 			return;
 		}
 
-		let socket = new WebSocket("ws://localhost:1107/tags");
+		if (context.rootState.devices.active === null) {
+			// TODO: Wait for existing action to complete.
+			await context.dispatch("loadDevices");
+		}
+
+		let deviceID = context.rootState.devices.active;
+		let socket = new WebSocket(`ws://localhost:1107/tags/${deviceID}`);
+
 		socket.onmessage = (message) => {
 			context.commit(types.UPDATE_TAG, JSON.parse(message.data));
 		};

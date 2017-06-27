@@ -5,3 +5,4 @@ DB_PASSWORD=
 DB_DATABASE=opcua_siemens
 
 OPC_URL=opc.tcp://IP_ADDRESS:PORT
+JWT_KEY=

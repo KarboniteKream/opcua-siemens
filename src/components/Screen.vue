@@ -322,6 +322,7 @@ export default {
 			this.activeComponent.attributes.push({
 				type: "color",
 				value: {},
+				delta: {},
 				conditions: [],
 				operator: "AND",
 			});

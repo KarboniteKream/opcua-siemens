@@ -2,14 +2,11 @@
 
 const opcua = require("node-opcua");
 
-const Tag = require("./models/tag");
 const Data = require("./models/data");
+const Device = require("./models/device");
+const Tag = require("./models/tag");
 
-let CONNECTION = null;
-let SUBSCRIPTION = null;
-let MONITORED_ITEMS = [];
-
-let SOCKETS = [];
+let DEVICES = [];
 
 function createConnection(url) {
 	return new Promise((resolve, reject) => {
@@ -27,35 +24,33 @@ function createConnection(url) {
 					return;
 				}
 
-				CONNECTION = {
+				resolve({
 					client,
 					session,
-				};
-
-				resolve();
+				});
 			});
 		});
 	});
 }
 
-function closeConnection() {
+function closeConnection(connection) {
 	return new Promise((resolve, reject) => {
-		CONNECTION.session.close((err) => {
+		connection.session.close((err) => {
 			if (err !== null) {
 				reject(err);
 				return;
 			}
 
-			CONNECTION.client.disconnect(() => {
+			connection.client.disconnect(() => {
 				resolve();
 			});
 		});
 	});
 }
 
-function browse(id = "RootFolder") {
+function browse(deviceID, id = "RootFolder") {
 	return new Promise((resolve, reject) => {
-		CONNECTION.session.browse(id, (err, result) => {
+		DEVICES[deviceID].connection.session.browse(id, (err, result) => {
 			if (err !== null) {
 				reject(err);
 				return;
@@ -115,7 +110,7 @@ function browse(id = "RootFolder") {
 	});
 }
 
-function browsePath(path = "RootFolder") {
+function browsePath(deviceID, path = "RootFolder") {
 	return new Promise(async (resolve, reject) => {
 		let folders = path.replace(/\/+/g, "/").replace(/\/$/, "").split("/");
 
@@ -124,7 +119,7 @@ function browsePath(path = "RootFolder") {
 		}
 
 		try {
-			let nodes = await browse("RootFolder");
+			let nodes = await browse(deviceID, "RootFolder");
 
 			for (let i = 1; i < folders.length; i++) {
 				let next = null;
@@ -142,7 +137,7 @@ function browsePath(path = "RootFolder") {
 				}
 
 				// eslint-disable-next-line no-await-in-loop
-				nodes = await browse(next.id);
+				nodes = await browse(deviceID, next.id);
 			}
 
 			return resolve(nodes);
@@ -152,7 +147,7 @@ function browsePath(path = "RootFolder") {
 	});
 }
 
-function read(ids, attribute = opcua.AttributeIds.Value) {
+function read(deviceID, ids, attribute = opcua.AttributeIds.Value) {
 	return new Promise((resolve, reject) => {
 		if (ids instanceof Array === false) {
 			// eslint-disable-next-line no-param-reassign
@@ -168,7 +163,7 @@ function read(ids, attribute = opcua.AttributeIds.Value) {
 			});
 		}
 
-		CONNECTION.session.read(nodes, 0, (err, _, data) => {
+		DEVICES[deviceID].connection.session.read(nodes, 0, (err, _, data) => {
 			if (err !== null) {
 				reject(err);
 				return;
@@ -187,7 +182,7 @@ function read(ids, attribute = opcua.AttributeIds.Value) {
 	});
 }
 
-function write(ids, values, attribute = opcua.AttributeIds.Value) {
+function write(deviceID, ids, values, attribute = opcua.AttributeIds.Value) {
 	return new Promise((resolve, reject) => {
 		if (ids instanceof Array === false) {
 			// eslint-disable-next-line no-param-reassign
@@ -209,7 +204,7 @@ function write(ids, values, attribute = opcua.AttributeIds.Value) {
 			});
 		}
 
-		CONNECTION.session.write(nodes, (err) => {
+		DEVICES[deviceID].connection.session.write(nodes, (err) => {
 			if (err !== null) {
 				reject(err);
 				return;
@@ -220,13 +215,15 @@ function write(ids, values, attribute = opcua.AttributeIds.Value) {
 	});
 }
 
-async function monitor(node) {
+async function monitor(deviceID, node) {
 	let tag = await Tag.where({
+		device_id: deviceID,
 		name: node.name,
 	}).fetch();
 
 	if (tag === null) {
 		tag = await Tag.forge({
+			device_id: deviceID,
 			name: node.name,
 			node_id: node.id,
 			monitor: true,
@@ -239,7 +236,7 @@ async function monitor(node) {
 		});
 	}
 
-	let item = SUBSCRIPTION.monitor({
+	let item = DEVICES[deviceID].subscription.monitor({
 		nodeId: tag.get("node_id"),
 		attributeId: opcua.AttributeIds.Value,
 	}, {}, opcua.read_service.TimestampsToReturn.Neither);
@@ -256,9 +253,9 @@ async function monitor(node) {
 			timestamp: data.sourceTimestamp,
 		}).save();
 
-		SOCKETS = SOCKETS.filter((socket) => socket.readyState === 1);
+		DEVICES[deviceID].sockets = DEVICES[deviceID].sockets.filter((socket) => socket.readyState === 1);
 
-		for (let socket of SOCKETS) {
+		for (let socket of DEVICES[deviceID].sockets) {
 			if (socket.readyState !== 1) {
 				continue;
 			}
@@ -270,14 +267,16 @@ async function monitor(node) {
 		}
 	});
 
-	MONITORED_ITEMS.push(item);
+	DEVICES[deviceID].monitoredItems.push(item);
 }
 
-function terminate(node) {
-	for (let i = 0; i < MONITORED_ITEMS.length; i++) {
-		if (MONITORED_ITEMS[i].itemToMonitor.nodeId.value === node.name) {
-			MONITORED_ITEMS[i].terminate(() => {
-				MONITORED_ITEMS.splice(i, 1);
+function terminate(deviceID, node) {
+	let monitoredItems = DEVICES[deviceID].monitoredItems;
+
+	for (let i = 0; i < monitoredItems.length; i++) {
+		if (monitoredItems[i].itemToMonitor.nodeId.value === node.name) {
+			monitoredItems[i].terminate(() => {
+				monitoredItems.splice(i, 1);
 			});
 
 			break;
@@ -285,24 +284,37 @@ function terminate(node) {
 	}
 }
 
-function start(url) {
+function start() {
 	return new Promise(async (resolve, reject) => {
 		try {
-			await createConnection(url);
+			let devices = (await Device.fetchAll()).toJSON();
 
-			SUBSCRIPTION = new opcua.ClientSubscription(CONNECTION.session, {
-				publishingEnabled: true,
-			});
-
-			let monitoredTags = (await Tag.where({
-				monitor: true,
-			}).fetchAll()).toJSON();
-
-			for (let tag of monitoredTags) {
-				monitor({
-					name: tag.name,
-					id: tag.node_id,
+			for (let device of devices) {
+				// eslint-disable-next-line no-await-in-loop
+				let connection = await createConnection(`opc.tcp://${device.ip}:4870`);
+				let subscription = new opcua.ClientSubscription(connection.session, {
+					publishingEnabled: true,
 				});
+
+				DEVICES[device.id] = {
+					connection,
+					subscription,
+					monitoredItems: [],
+					sockets: [],
+				};
+
+				// eslint-disable-next-line no-await-in-loop
+				let monitoredTags = (await Tag.where({
+					device_id: device.id,
+					monitor: true,
+				}).fetchAll()).toJSON();
+
+				for (let tag of monitoredTags) {
+					monitor(device.id, {
+						name: tag.name,
+						id: tag.node_id,
+					});
+				}
 			}
 
 			return resolve();
@@ -313,11 +325,13 @@ function start(url) {
 }
 
 function stop() {
-	closeConnection();
+	for (let device of DEVICES) {
+		closeConnection(device.connection);
+	}
 }
 
-function addSocket(socket) {
-	SOCKETS.push(socket);
+function addSocket(deviceID, socket) {
+	DEVICES[deviceID].sockets.push(socket);
 }
 
 module.exports = {

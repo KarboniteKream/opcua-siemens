@@ -3,21 +3,30 @@
 // Load .env configuration.
 require("dotenv").load();
 
+const bcrypt = require("bcrypt");
+const bluebird = require("bluebird");
 const bodyParser = require("koa-bodyparser");
 const bookshelf = require("./database");
+const jwt = require("jsonwebtoken");
 const Koa = require("koa");
 const opcua = require("./opcua");
 const path = require("path");
+const Redis = require("redis");
 const Router = require("koa-router");
 const send = require("koa-send");
 const serve = require("koa-static");
 const websocket = require("koa-websocket");
+
+bluebird.promisifyAll(Redis.RedisClient.prototype);
+
+const redis = Redis.createClient();
 
 const Component = require("./models/component");
 const Data = require("./models/data");
 const Device = require("./models/device");
 const Screen = require("./models/screen");
 const Tag = require("./models/tag");
+const User = require("./models/user");
 
 process.on("exit", cleanup);
 process.on("SIGINT", cleanup);
@@ -30,14 +39,127 @@ function cleanup() {
 	process.exit(1);
 }
 
-opcua.start(process.env.OPC_URL);
+opcua.start();
 
 const server = websocket(new Koa());
+
+server.use(async (ctx, next) => {
+	if (ctx.url.startsWith("/api/auth") === true) {
+		return next();
+	}
+
+	if (typeof ctx.request.headers.authorization === "undefined") {
+		ctx.status = 400;
+		ctx.body = "No token provided.";
+		return;
+	}
+
+	let token = ctx.request.headers.authorization.split(" ")[1];
+
+	if (typeof token === "undefined") {
+		ctx.status = 400;
+		ctx.body = "No token provided.";
+		return;
+	}
+
+	try {
+		let decoded = jwt.verify(token, process.env.JWT_KEY);
+		ctx.user = decoded;
+		return next();
+	} catch (err) {
+		ctx.status = 401;
+		ctx.body = "Invalid token.";
+	}
+});
+
 const wsRouter = new Router();
 const router = new Router();
 
-wsRouter.get("/tags", (ctx) => {
-	opcua.addSocket(ctx.websocket);
+wsRouter.get("/tags/:device_id", (ctx) => {
+	opcua.addSocket(ctx.params.device_id, ctx.websocket);
+});
+
+router.post("/api/auth/login", async (ctx) => {
+	let user = await User.where({
+		email: ctx.request.body.email,
+	}).fetch();
+
+	if (user === null) {
+		ctx.status = 401;
+		ctx.body = "Incorrect email or password.";
+		return;
+	}
+
+	user = user.toJSON();
+
+	if (bcrypt.compareSync(ctx.request.body.password, user.password) === false) {
+		ctx.status = 401;
+		ctx.body = "Incorrect email or password.";
+		return;
+	}
+
+	let accessToken = jwt.sign({
+		id: user.id,
+		type: "access",
+	}, process.env.JWT_KEY, {
+		expiresIn: "15 minutes",
+	});
+
+	let refreshToken = jwt.sign({
+		id: user.id,
+		type: "refresh",
+	}, process.env.JWT_KEY, {
+		expiresIn: "14 days",
+	});
+
+	redis.set(refreshToken, user.id);
+	redis.expire(refreshToken, 14 * 24 * 60 * 60);
+
+	ctx.body = {
+		accessToken,
+		refreshToken,
+	};
+});
+
+router.post("/api/auth/refresh", async (ctx) => {
+	let token = ctx.request.headers.authorization.split(" ")[1];
+
+	if (typeof token === "undefined") {
+		ctx.status = 400;
+		ctx.body = "No token provided.";
+		return;
+	}
+
+	try {
+		let decoded = jwt.verify(token, process.env.JWT_KEY);
+
+		if (decoded.type !== "refresh") {
+			ctx.status = 400;
+			ctx.body = "Invalid token.";
+			return;
+		}
+
+		let result = await redis.existsAsync(token);
+
+		if (result === 0) {
+			ctx.status = 401;
+			ctx.body = "This token has been revoked.";
+		}
+
+		let accessToken = jwt.sign({
+			id: decoded.id,
+			type: "access",
+		}, process.env.JWT_KEY, {
+			expiresIn: "15 minutes",
+		});
+
+		ctx.body = {
+			accessToken,
+		};
+	} catch (err) {
+		ctx.status = 400;
+		ctx.body = "Invalid token.";
+	}
 });
 
 router.get("/api/devices", async (ctx) => {
@@ -156,8 +278,7 @@ router.put("/api/devices/:id/tags/:tag_id", async (ctx) => {
 	}
 
 	if (typeof ctx.request.body.value !== "undefined") {
-		// TODO: Does this trigger the subscription?
-		await opcua.write(tag.get("node_id"), ctx.request.body.value);
+		await opcua.write(ctx.params.id, tag.get("node_id"), ctx.request.body.value);
 	}
 
 	if (typeof ctx.request.body.monitor !== "undefined") {
@@ -166,9 +287,9 @@ router.put("/api/devices/:id/tags/:tag_id", async (ctx) => {
 		});
 
 		if (ctx.request.body.monitor === true) {
-			await opcua.monitor(ctx.request.body);
+			await opcua.monitor(ctx.params.id, ctx.request.body);
 		} else {
-			opcua.terminate(ctx.request.body);
+			opcua.terminate(ctx.params.id, ctx.request.body);
 		}
 	}
 
@@ -187,9 +308,8 @@ router.get("/api/devices/:id/tags/:tag_id/history", async (ctx) => {
 });
 
 router.get("/api/device/:id/browse/:path*", async (ctx) => {
-	// TODO: Browse only the specified device.
 	let nodePath = "/" + (ctx.params.path || "");
-	ctx.body = await opcua.browsePath(nodePath);
+	ctx.body = await opcua.browsePath(ctx.params.id, nodePath);
 });
 
 router.get("/*", async (ctx) => {
@@ -203,4 +323,4 @@ server.ws.use(wsRouter.allowedMethods());
 server.use(router.routes());
 server.use(router.allowedMethods());
 
-server.listen(1107);
+server.listen(1107, "0.0.0.0");
