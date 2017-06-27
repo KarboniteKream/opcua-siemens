@@ -62,7 +62,6 @@ rules:
     accessor-pairs: warn
     array-callback-return: error
     class-methods-use-this: warn
-    consistent-return: error
     curly: error
     default-case:
         - warn
