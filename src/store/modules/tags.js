@@ -120,6 +120,20 @@ const actions = {
 	selectTag(context, id) {
 		context.commit(types.SELECT_TAG, id);
 	},
+	async deleteTag(context, tag) {
+		if (context.rootState.devices.active === null) {
+			// TODO: Wait for existing action to complete.
+			await context.dispatch("loadDevices");
+		}
+
+		try {
+			let deviceID = context.rootState.devices.active;
+			await axios.delete(`/api/devices/${deviceID}/tags/${tag.id}`);
+            context.commit(types.DELETE_TAG, tag.id);
+		} catch (err) {
+			console.log(err);
+		}
+	},
 	async loadGroups(context) {
 		if (context.rootState.devices.active === null) {
 			// TODO: Wait for existing action to complete.
@@ -211,6 +225,16 @@ const mutations = {
 	},
 	[types.SELECT_TAG](state, id) {
 		state.active = id;
+	},
+	[types.DELETE_TAG](state, id) {
+		let tags = state.all;
+
+		for (let i = 0; i < tags.length; i++) {
+			if (tags[i].id === id) {
+				tags.splice(i, 1);
+				break;
+			}
+		}
 	},
 	[types.LOAD_GROUPS](state, groups) {
 		state.groups = groups;

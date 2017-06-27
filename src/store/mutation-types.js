@@ -9,6 +9,7 @@ export const TOGGLE_MONITOR = "TOGGLE_MONITOR";
 export const UPDATE_TAG = "UPDATE_TAG";
 export const LOAD_TAG_HISTORY = "LOAD_TAG_HISTORY";
 export const SELECT_TAG = "SELECT_TAG";
+export const DELETE_TAG = "DELETE_TAG";
 
 export const LOAD_GROUPS = "LOAD_GROUPS";
 export const CREATE_GROUP = "CREATE_GROUP";

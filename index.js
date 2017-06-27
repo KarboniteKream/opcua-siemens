@@ -376,6 +376,15 @@ router.get("/api/devices/:id/tags/:tag_id/history", async (ctx) => {
 	ctx.body = data.toJSON();
 });
 
+router.delete("/api/devices/:id/tags/:tag_id", async (ctx) => {
+	await Tag.where({
+		id: ctx.params.tag_id,
+		device_id: ctx.params.id,
+	}).destroy();
+
+	ctx.status = 204;
+});
+
 router.get("/api/device/:id/browse/:path*", async (ctx) => {
 	let nodePath = "/" + (ctx.params.path || "");
 	ctx.body = await opcua.browsePath(ctx.params.id, nodePath);

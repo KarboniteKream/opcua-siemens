@@ -20,6 +20,7 @@
 				<span :class='["pointer", "fa", field.item.monitor ? "fa-eye" : "fa-eye-slash"]' @click="toggleMonitor(field.item)"></span>
 				<span class="pointer fa fa-pencil" @click="showModal(field.item)"></span>
 				<span class="pointer fa fa-area-chart" @click="showGraph(field.item)"></span>
+				<span class="pointer fa fa-trash" @click="deleteTag(field.item)"></span>
 			</template>
 		</b-table>
 	</div>
@@ -98,6 +99,7 @@ export default {
 			"writeTag",
 			"loadTagHistory",
 			"selectTag",
+			"deleteTag",
 			"loadGroups",
 			"createGroup",
 			"addTagToGroup",
