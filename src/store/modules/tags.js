@@ -183,7 +183,21 @@ const actions = {
 			console.log(err);
 		}
 	},
-	removeTagFromGroup(context) {
+	async removeTagFromGroup(context, data) {
+		if (context.rootState.devices.active === null) {
+			// TODO: Wait for existing action to complete.
+			await context.dispatch("loadDevices");
+		}
+
+		try {
+			let deviceID = context.rootState.devices.active;
+			let groupID = context.state.groups[data.groupIdx].id;
+
+			await axios.delete(`/api/devices/${deviceID}/groups/${groupID}/tags/${data.tag.id}`);
+			context.commit(types.REMOVE_TAG_FROM_GROUP, data);
+		} catch (err) {
+			console.log(err);
+		}
 	},
 	async deleteGroup(context, idx) {
 		if (context.rootState.devices.active === null) {
@@ -273,7 +287,17 @@ const mutations = {
 			}
 		}
 	},
-	[types.REMOVE_TAG_FROM_GROUP](state, id) {
+	[types.REMOVE_TAG_FROM_GROUP](state, data) {
+		let group = state.groups[data.groupIdx];
+
+		for (let i = 0; i < group.tags.length; i++) {
+			let tag = group.tags[i];
+
+			if (tag.id === data.tag.id) {
+				group.tags.splice(i, 1);
+				break;
+			}
+		}
 	},
 	[types.DELETE_GROUP](state, idx) {
 		state.groups.splice(idx, 1);

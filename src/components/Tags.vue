@@ -9,6 +9,7 @@
 					<span class="pointer fa fa-pencil" @click="showModal(field.item)"></span>
 					<span class="pointer fa fa-area-chart" @click="showGraph(field.item)"></span>
 					<span class="pointer fa fa-tag" @click="showTagModal(field.item)"></span>
+					<span class="pointer fa fa-times" @click="removeTagFromGroup({ tag: field.item, groupIdx: idx })"></span>
 				</template>
 			</b-table>
 		</div>
@@ -135,7 +136,8 @@ export default {
 .fa-eye-slash,
 .fa-pencil,
 .fa-area-chart,
-.fa-trash {
+.fa-trash,
+.fa-tag {
 	margin-right: 5px;
 }
 

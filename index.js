@@ -306,6 +306,24 @@ router.post("/api/devices/:id/groups/:group_id/tags", async (ctx) => {
 	ctx.status = 204;
 });
 
+router.delete("/api/devices/:id/groups/:group_id/tags/:tag_id", async (ctx) => {
+	let group = await Group.where({
+		id: ctx.params.group_id,
+		user_id: ctx.user.id,
+		device_id: ctx.params.id,
+	}).fetch();
+
+	if (group === null) {
+		ctx.status = 500;
+		ctx.body = "ERROR";
+		return;
+	}
+
+	group.tags().detach(ctx.params.tag_id);
+
+	ctx.status = 204;
+});
+
 router.delete("/api/devices/:id/groups/:group_id", async (ctx) => {
 	await Group.forge({
 		id: ctx.params.group_id,
