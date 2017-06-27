@@ -65,6 +65,13 @@ server.use(async (ctx, next) => {
 
 	try {
 		let decoded = jwt.verify(token, process.env.JWT_KEY);
+
+		if (decoded.type === "refresh") {
+			ctx.status = 401;
+			ctx.body = "Invalid token.";
+			return;
+		}
+
 		ctx.user = decoded;
 		return next();
 	} catch (err) {
@@ -166,6 +173,32 @@ router.post("/api/auth/refresh", async (ctx) => {
 router.get("/api/devices", async (ctx) => {
 	let devices = (await Device.fetchAll()).toJSON();
 	ctx.body = devices;
+});
+
+router.post("/api/devices", async (ctx) => {
+	let device = (await Device.forge({
+		name: ctx.request.body.name,
+		description: ctx.request.body.description,
+		ip: ctx.request.body.ip,
+	}).save()).toJSON();
+
+	try {
+		await opcua.add(device);
+		ctx.body = device;
+	} catch (err) {
+		ctx.status = 500;
+		ctx.body = err;
+	}
+});
+
+router.delete("/api/devices/:id", async (ctx) => {
+	await Device.forge({
+		id: ctx.params.id,
+	}).destroy();
+
+	// TODO: Stop OPC UA connection.
+
+	ctx.status = 204;
 });
 
 router.get("/api/devices/:id/screens", async (ctx) => {

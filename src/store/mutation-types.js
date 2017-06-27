@@ -1,5 +1,7 @@
 export const LOAD_DEVICES = "LOAD_DEVICES";
+export const CREATE_DEVICE = "CREATE_DEVICE";
 export const SET_ACTIVE_DEVICE = "SET_ACTIVE_DEVICE";
+export const DELETE_DEVICE = "DELETE_DEVICE";
 
 export const INIT_SOCKET = "INIT_SOCKET";
 export const LOAD_TAGS = "LOAD_TAGS";

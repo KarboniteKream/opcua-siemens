@@ -330,6 +330,31 @@ function stop() {
 	}
 }
 
+function add(device) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			console.log("ADDED");
+			let connection = await createConnection(`opc.tcp://${device.ip}:4870`);
+			let subscription = new opcua.ClientSubscription(connection.session, {
+				publishingEnabled: true,
+			});
+
+			DEVICES[device.id] = {
+				connection,
+				subscription,
+				monitoredItems: [],
+				sockets: [],
+			};
+
+			console.log("ADDED");
+
+			return resolve();
+		} catch (err) {
+			return reject(err);
+		}
+	});
+}
+
 function addSocket(deviceID, socket) {
 	DEVICES[deviceID].sockets.push(socket);
 }
@@ -337,6 +362,7 @@ function addSocket(deviceID, socket) {
 module.exports = {
 	start,
 	stop,
+	add,
 	browsePath,
 	read,
 	write,
