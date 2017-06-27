@@ -24,6 +24,7 @@ const redis = Redis.createClient();
 const Component = require("./models/component");
 const Data = require("./models/data");
 const Device = require("./models/device");
+const Group = require("./models/group");
 const Screen = require("./models/screen");
 const Tag = require("./models/tag");
 const User = require("./models/user");
@@ -224,6 +225,41 @@ router.put("/api/devices/:id/screens/:screen_id/components/:component_id", async
 router.delete("/api/devices/:id/screens/:screen_id/components/:component_id", async (ctx) => {
 	await Component.forge({
 		id: ctx.params.component_id,
+	}).destroy();
+
+	ctx.status = 204;
+});
+
+router.get("/api/devices/:id/groups", async (ctx) => {
+	let groups = await Group.where({
+		user_id: ctx.user.id,
+		device_id: ctx.params.id,
+	}).fetchAll({
+		withRelated: {
+			tags: (qb) => {
+				qb.select("id");
+			},
+		},
+	});
+
+	ctx.body = groups.toJSON();
+});
+
+router.post("/api/devices/:id/groups", async (ctx) => {
+	let group = await Group.forge({
+		user_id: ctx.user.id,
+		device_id: ctx.params.id,
+		name: ctx.request.body.name,
+	}).save();
+
+	ctx.body = group.toJSON();
+});
+
+router.delete("/api/devices/:id/groups/:group_id", async (ctx) => {
+	await Group.forge({
+		id: ctx.params.group_id,
+		device_id: ctx.params.id,
+		user_id: ctx.user.id,
 	}).destroy();
 
 	ctx.status = 204;

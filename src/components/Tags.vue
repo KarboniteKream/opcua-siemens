@@ -1,6 +1,19 @@
 <template>
 <div class="tags">
-	<!-- FIXME: Issue with bootstrap v4.0.0-alpha.6 -->
+	<div v-for="(group, idx) in groups" :key="group.id">
+		<h2 class="group-name">{{ group.name }}</h2> <span class="pointer" @click="deleteGroup(idx)">&times; Remove</span>
+		<div class="table-responsive">
+			<b-table :items="group.tags" :fields="fields" hover striped>
+				<template slot="actions" scope="field">
+					<span :class='["pointer", "fa", field.item.monitor ? "fa-eye" : "fa-eye-slash"]' @click="toggleMonitor(field.item)"></span>
+					<span class="pointer fa fa-pencil" @click="showModal(field.item)"></span>
+					<span class="pointer fa fa-area-chart" @click="showGraph(field.item)"></span>
+				</template>
+			</b-table>
+		</div>
+	</div>
+	<span class="new-group pointer" @click="showGroupModal">+ New group</span>
+	<h2>All tags</h2>
 	<div class="table-responsive">
 		<b-table :items="tags" :fields="fields" hover striped>
 			<template slot="actions" scope="field">
@@ -10,6 +23,9 @@
 			</template>
 		</b-table>
 	</div>
+	<b-modal ref="groupModal" title="New group" ok-title="Create" @ok="createGroup(newGroupName)">
+		<b-form-input ref="groupInput" type="text" placeholder="Group name" v-model="newGroupName" autofocus></b-form-input>
+	</b-modal>
 	<b-modal ref="modal" title="Update tag value" ok-title="Save" @ok="writeTag(newData)">
 		<b-form-input ref="input" type="text" placeholder="New value" v-model="newData.value" autofocus></b-form-input>
 	</b-modal>
@@ -45,6 +61,7 @@ export default {
 					label: "Value",
 				},
 			},
+			newGroupName: "",
 			newData: {
 				name: "",
 				value: "",
@@ -54,6 +71,7 @@ export default {
 	},
 	computed: {
 		...mapGetters([
+			"groups",
 			"tags",
 			"history",
 		]),
@@ -63,6 +81,10 @@ export default {
 			this.newData = { ...item };
 			this.$refs.modal.show();
 			this.$refs.input.focus();
+		},
+		showGroupModal(item) {
+			this.$refs.groupModal.show();
+			this.$refs.groupInput.focus();
 		},
 		async showGraph(item) {
 			await this.loadTagHistory(item.id);
@@ -76,9 +98,15 @@ export default {
 			"writeTag",
 			"loadTagHistory",
 			"selectTag",
+			"loadGroups",
+			"createGroup",
+			"addTagToGroup",
+			"removeTagFromGroup",
+			"deleteGroup",
 		]),
 	},
 	mounted() {
+		this.loadGroups();
 		this.loadTags();
 	},
 	watch: {
@@ -94,5 +122,20 @@ export default {
 .fa-eye-slash,
 .fa-pencil {
 	margin-right: 5px;
+}
+
+h2.group-name {
+	display: inline-block;
+	margin-right: 10px;
+}
+
+.new-group {
+	display: block;
+	margin-top: -10px;
+	margin-bottom: 40px;
+}
+
+table {
+	margin-bottom: 40px;
 }
 </style>

@@ -1,9 +1,10 @@
-import axios from "axios";
+import axios from "../axios";
 
 import * as types from "../mutation-types";
 
 const state = {
 	socket: null,
+	groups: [],
 	all: [],
 	active: null,
 	history: [],
@@ -11,6 +12,19 @@ const state = {
 
 const getters = {
 	// TODO: How can we use this with mapState()?
+	groups: (state) => {
+		return state.groups.map((group) => {
+			group = { ...group };
+
+			group.tags = group.tags.map((tag) => {
+				return state.all.find((t) => {
+					return t.id === tag.id;
+				});
+			});
+
+			return group;
+		});
+	},
 	tags: (state) => state.all,
 	namedTags: (state) => state.all.reduce((acc, tag) => {
 		acc[tag.name] = tag.value;
@@ -31,7 +45,7 @@ const actions = {
 		}
 
 		let deviceID = context.rootState.devices.active;
-		let socket = new WebSocket(`ws://localhost:1107/tags/${deviceID}`);
+		let socket = new WebSocket(`ws://${location.hostname}:1107/tags/${deviceID}`);
 
 		socket.onmessage = (message) => {
 			context.commit(types.UPDATE_TAG, JSON.parse(message.data));
@@ -106,6 +120,54 @@ const actions = {
 	selectTag(context, id) {
 		context.commit(types.SELECT_TAG, id);
 	},
+	async loadGroups(context) {
+		if (context.rootState.devices.active === null) {
+			// TODO: Wait for existing action to complete.
+			await context.dispatch("loadDevices");
+		}
+
+		try {
+			let deviceID = context.rootState.devices.active;
+			let response = await axios.get(`/api/devices/${deviceID}/groups`);
+			context.commit(types.LOAD_GROUPS, response.data);
+		} catch (err) {
+			console.log(err);
+		}
+	},
+	async createGroup(context, name) {
+		if (context.rootState.devices.active === null) {
+			// TODO: Wait for existing action to complete.
+			await context.dispatch("loadDevices");
+		}
+
+		try {
+			let deviceID = context.rootState.devices.active;
+			let response = await axios.post(`/api/devices/${deviceID}/groups`, { name });
+			response.data.tags = [];
+			context.commit(types.CREATE_GROUP, response.data);
+		} catch (err) {
+			console.log(err);
+		}
+	},
+	addTagToGroup(context) {
+	},
+	removeTagFromGroup(context) {
+	},
+	async deleteGroup(context, idx) {
+		if (context.rootState.devices.active === null) {
+			// TODO: Wait for existing action to complete.
+			await context.dispatch("loadDevices");
+		}
+
+		try {
+			let deviceID = context.rootState.devices.active;
+			let groupID = context.state.groups[idx].id;
+			await axios.delete(`/api/devices/${deviceID}/groups/${groupID}`);
+            context.commit(types.DELETE_GROUP, idx);
+		} catch (err) {
+			console.log(err);
+		}
+	},
 };
 
 const mutations = {
@@ -149,6 +211,19 @@ const mutations = {
 	},
 	[types.SELECT_TAG](state, id) {
 		state.active = id;
+	},
+	[types.LOAD_GROUPS](state, groups) {
+		state.groups = groups;
+	},
+	[types.CREATE_GROUP](state, group) {
+		state.groups.push(group);
+	},
+	[types.ADD_TAG_TO_GROUP](state, id) {
+	},
+	[types.REMOVE_TAG_FROM_GROUP](state, id) {
+	},
+	[types.DELETE_GROUP](state, idx) {
+		state.groups.splice(idx, 1);
 	},
 };
 

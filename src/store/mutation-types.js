@@ -8,6 +8,12 @@ export const UPDATE_TAG = "UPDATE_TAG";
 export const LOAD_TAG_HISTORY = "LOAD_TAG_HISTORY";
 export const SELECT_TAG = "SELECT_TAG";
 
+export const LOAD_GROUPS = "LOAD_GROUPS";
+export const CREATE_GROUP = "CREATE_GROUP";
+export const ADD_TAG_TO_GROUP = "ADD_TAG_TO_GROUP";
+export const REMOVE_TAG_FROM_GROUP = "REMOVE_TAG_FROM_GROUP";
+export const DELETE_GROUP = "DELETE_GROUP";
+
 export const LOAD_NODES = "LOAD_NODES";
 export const UPDATE_BREADCRUMB = "UPDATE_BREADCRUMB";
 
