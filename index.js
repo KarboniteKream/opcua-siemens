@@ -288,6 +288,24 @@ router.post("/api/devices/:id/groups", async (ctx) => {
 	ctx.body = group.toJSON();
 });
 
+router.post("/api/devices/:id/groups/:group_id/tags", async (ctx) => {
+	let group = await Group.where({
+		id: ctx.params.group_id,
+		user_id: ctx.user.id,
+		device_id: ctx.params.id,
+	}).fetch();
+
+	if (group === null) {
+		ctx.status = 500;
+		ctx.body = "ERROR";
+		return;
+	}
+
+	group.tags().attach(ctx.request.body.id);
+
+	ctx.status = 204;
+});
+
 router.delete("/api/devices/:id/groups/:group_id", async (ctx) => {
 	await Group.forge({
 		id: ctx.params.group_id,

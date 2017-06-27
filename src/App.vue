@@ -52,7 +52,7 @@ export default {
 
 		if (token === null && this.$route.path !== "/login") {
 			this.$router.push("login");
-		} else if (token !== null) {
+		} else if (token !== null && this.$route.path === "/login") {
 			this.$router.push("/");
 		}
 	},
@@ -65,7 +65,7 @@ export default {
 
 			if (token === null && this.$route.path !== "/login") {
 				this.$router.push("login");
-			} else if (token !== null) {
+			} else if (token !== null && this.$route.path === "/login") {
 				this.$router.push("/");
 			}
 		},

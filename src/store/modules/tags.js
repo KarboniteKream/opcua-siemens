@@ -163,7 +163,25 @@ const actions = {
 			console.log(err);
 		}
 	},
-	addTagToGroup(context) {
+	async addTagToGroup(context, data) {
+		if (context.rootState.devices.active === null) {
+			// TODO: Wait for existing action to complete.
+			await context.dispatch("loadDevices");
+		}
+
+		try {
+			let deviceID = context.rootState.devices.active;
+
+            for (let group of context.state.groups) {
+				if (group.name === data.group) {
+					await axios.post(`/api/devices/${deviceID}/groups/${group.id}/tags`, { id: data.tag });
+					context.commit(types.ADD_TAG_TO_GROUP, data);
+					break;
+				}
+            }
+		} catch (err) {
+			console.log(err);
+		}
 	},
 	removeTagFromGroup(context) {
 	},
@@ -242,7 +260,18 @@ const mutations = {
 	[types.CREATE_GROUP](state, group) {
 		state.groups.push(group);
 	},
-	[types.ADD_TAG_TO_GROUP](state, id) {
+	[types.ADD_TAG_TO_GROUP](state, data) {
+		for (let group of state.groups) {
+			if (group.name === data.group) {
+				for (let tag of state.all) {
+					if (tag.id === data.tag) {
+						group.tags.push(tag);
+						break;
+					}
+				}
+				break;
+			}
+		}
 	},
 	[types.REMOVE_TAG_FROM_GROUP](state, id) {
 	},

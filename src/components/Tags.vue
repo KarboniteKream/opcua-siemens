@@ -8,6 +8,7 @@
 					<span :class='["pointer", "fa", field.item.monitor ? "fa-eye" : "fa-eye-slash"]' @click="toggleMonitor(field.item)"></span>
 					<span class="pointer fa fa-pencil" @click="showModal(field.item)"></span>
 					<span class="pointer fa fa-area-chart" @click="showGraph(field.item)"></span>
+					<span class="pointer fa fa-tag" @click="showTagModal(field.item)"></span>
 				</template>
 			</b-table>
 		</div>
@@ -21,11 +22,15 @@
 				<span class="pointer fa fa-pencil" @click="showModal(field.item)"></span>
 				<span class="pointer fa fa-area-chart" @click="showGraph(field.item)"></span>
 				<span class="pointer fa fa-trash" @click="deleteTag(field.item)"></span>
+				<span class="pointer fa fa-tag" @click="showTagModal(field.item)"></span>
 			</template>
 		</b-table>
 	</div>
 	<b-modal ref="groupModal" title="New group" ok-title="Create" @ok="createGroup(newGroupName)">
 		<b-form-input ref="groupInput" type="text" placeholder="Group name" v-model="newGroupName" autofocus></b-form-input>
+	</b-modal>
+	<b-modal ref="tagModal" title="Add to group" ok-title="Add" @ok="addTagToGroup({ tag: selectedTag, group: newGroup })">
+		<b-form-select class="tag-groups" v-model="newGroup" :options="groups.map((group) => group.name)"></b-form-select>
 	</b-modal>
 	<b-modal ref="modal" title="Update tag value" ok-title="Save" @ok="writeTag(newData)">
 		<b-form-input ref="input" type="text" placeholder="New value" v-model="newData.value" autofocus></b-form-input>
@@ -63,6 +68,8 @@ export default {
 				},
 			},
 			newGroupName: "",
+			selectedTag: null,
+			newGroup: null,
 			newData: {
 				name: "",
 				value: "",
@@ -86,6 +93,10 @@ export default {
 		showGroupModal(item) {
 			this.$refs.groupModal.show();
 			this.$refs.groupInput.focus();
+		},
+		showTagModal(item) {
+			this.selectedTag = item.id;
+			this.$refs.tagModal.show();
 		},
 		async showGraph(item) {
 			await this.loadTagHistory(item.id);
@@ -122,7 +133,9 @@ export default {
 <style scoped>
 .fa-eye,
 .fa-eye-slash,
-.fa-pencil {
+.fa-pencil,
+.fa-area-chart,
+.fa-trash {
 	margin-right: 5px;
 }
 
@@ -139,5 +152,9 @@ h2.group-name {
 
 table {
 	margin-bottom: 40px;
+}
+
+.tag-groups {
+	width: 100%;
 }
 </style>
