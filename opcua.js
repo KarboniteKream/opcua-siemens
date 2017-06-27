@@ -333,7 +333,6 @@ function stop() {
 function add(device) {
 	return new Promise(async (resolve, reject) => {
 		try {
-			console.log("ADDED");
 			let connection = await createConnection(`opc.tcp://${device.ip}:4870`);
 			let subscription = new opcua.ClientSubscription(connection.session, {
 				publishingEnabled: true,

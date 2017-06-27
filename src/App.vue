@@ -17,8 +17,7 @@
 					<template slot="text">
 						<span class="bold">User</span>
 					</template>
-					<b-dropdown-item to="#">Profile</b-dropdown-item>
-					<b-dropdown-item to="#">Logout</b-dropdown-item>
+					<b-dropdown-item @click="logout">Logout</b-dropdown-item>
 				</b-nav-item-dropdown>
 			</b-nav>
 		</b-collapse>
@@ -40,13 +39,37 @@ export default {
 		]),
 	},
 	methods: {
+		logout() {
+			localStorage.removeItem("token");
+			this.$router.push("login");
+		},
 		...mapActions([
 			"loadDevices",
 		]),
 	},
+	created() {
+		let token = localStorage.getItem("token");
+
+		if (token === null && this.$route.path !== "/login") {
+			this.$router.push("login");
+		} else if (token !== null) {
+			this.$router.push("/");
+		}
+	},
 	mounted() {
 		this.loadDevices();
 	},
+	watch: {
+		"$route"() {
+			let token = localStorage.getItem("token");
+
+			if (token === null && this.$route.path !== "/login") {
+				this.$router.push("login");
+			} else if (token !== null) {
+				this.$router.push("/");
+			}
+		},
+	}
 };
 </script>
 
