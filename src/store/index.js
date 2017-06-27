@@ -2,7 +2,6 @@ import Vue from "vue";
 import Vuex from "vuex";
 
 import createLogger from "vuex/dist/logger";
-import createPersistedState from "vuex-persistedstate";
 
 import devices from "./modules/devices";
 import tags from "./modules/tags";
@@ -21,10 +20,5 @@ export default new Vuex.Store({
 		screen,
 	},
 	strict: debug,
-	plugins: debug ? [
-		createPersistedState(),
-		createLogger(),
-	] : [
-		createPersistedState(),
-	],
+	plugins: debug ? [createLogger()] : [],
 });

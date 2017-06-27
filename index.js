@@ -45,7 +45,7 @@ opcua.start();
 const server = websocket(new Koa());
 
 server.use(async (ctx, next) => {
-	if (ctx.url.startsWith("/api/auth") === true) {
+	if (ctx.url.startsWith("/api") === false || ctx.url.startsWith("/api/auth") === true) {
 		return next();
 	}
 
