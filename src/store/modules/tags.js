@@ -30,7 +30,7 @@ const getters = {
 		acc[tag.name] = tag.value;
 		return acc;
 	}, {}),
-	history: (history) => state.history,
+	history: (state) => state.history,
 };
 
 const actions = {

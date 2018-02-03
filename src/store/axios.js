@@ -5,7 +5,7 @@ let instance = axios.create();
 instance.interceptors.request.use((config) => {
 	let token = localStorage.getItem("token");
 
-	if (typeof token !== "undefined") {
+	if (token !== null) {
 		config.headers.authorization = `Bearer ${token}`;
 	}
 

@@ -44,7 +44,7 @@ opcua.start();
 
 const server = websocket(new Koa());
 
-server.use(async (ctx, next) => {
+server.use((ctx, next) => {
 	if (ctx.url.startsWith("/api") === false || ctx.url.startsWith("/api/auth") === true) {
 		return next();
 	}
@@ -164,7 +164,7 @@ router.post("/api/auth/refresh", async (ctx) => {
 		ctx.body = {
 			accessToken,
 		};
-	} catch (err) {
+	} catch (_) {
 		ctx.status = 400;
 		ctx.body = "Invalid token.";
 	}
